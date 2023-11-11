@@ -8,8 +8,8 @@ CFLAGS += -pedantic
 # CFLAGS += -Werror
 CFLAGS += -Wmissing-declarations
 ASANFLAGS=-fsanitize=address -fno-common -fno-omit-frame-pointer
-CFLAGS += $(shell pkg-config --cflags sdl2 SDL2_image)
-LDFLAGS = $(shell pkg-config --libs sdl2 SDL2_image) -lm
+CFLAGS += $(shell pkg-config --cflags sdl2 SDL2_image SDL2_ttf)
+LDFLAGS = $(shell pkg-config --libs sdl2 SDL2_image SDL2_ttf) -lm
 LIBS = -I./libs/
 
 ifeq ($(shell uname -s),Darwin)
