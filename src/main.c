@@ -1,20 +1,24 @@
 #include "SDL.h"
+#include "SDL_audio.h"
 #include "SDL_render.h"
+#include "SDL_video.h"
 #include <bits/posix2_lim.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#define WIN_WIDTH 800
-#define WIN_HEIGHT 600
-
 bool init_win(void);
 bool setup(void);
 void process_input(void);
 void update(void);
+void clear_colour_buf(const uint32_t colour);
+void render_colour_buf(void);
 void render(void);
 void cleanup(void);
+
+int win_width = 800;
+int win_height = 600;
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
@@ -24,7 +28,7 @@ SDL_Texture *colour_buf_tex = NULL;
 
 bool running = false;
 
-int main(int argc, char *argv[])
+int main(void)
 {
     running = init_win();
 
@@ -50,12 +54,17 @@ bool init_win(void)
         return false;
     }
 
+    SDL_DisplayMode display_mode;
+    SDL_GetCurrentDisplayMode(0, &display_mode);
+    win_width = display_mode.w;
+    win_height = display_mode.h;
+
     window = SDL_CreateWindow(
         "3d Renderer",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        WIN_WIDTH,
-        WIN_HEIGHT,
+        win_width,
+        win_height,
         SDL_WINDOW_BORDERLESS
     );
     if (!window) {
@@ -69,12 +78,14 @@ bool init_win(void)
         return false;
     }
 
+    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+
     return true;
 }
 
 bool setup(void)
 {
-    colour_buf = (uint32_t *)malloc(sizeof(uint32_t) * WIN_WIDTH * WIN_HEIGHT);
+    colour_buf = (uint32_t *)malloc(sizeof(uint32_t) * win_width * win_height);
     if (!colour_buf) {
         fprintf(stderr, "error allocating colour buffer\n");
         return false;
@@ -84,8 +95,8 @@ bool setup(void)
         renderer,
         SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_STREAMING,
-        WIN_WIDTH,
-        WIN_HEIGHT
+        win_width,
+        win_height
     );
     if (!colour_buf_tex) {
         fprintf(stderr, "error creating colour buffer texture: %s\n", SDL_GetError());
@@ -119,9 +130,9 @@ void update(void)
 
 void clear_colour_buf(const uint32_t colour)
 {
-    for (int y = 0; y < WIN_HEIGHT; y++) {
-        for (int x = 0; x < WIN_WIDTH; x++) {
-            colour_buf[(WIN_WIDTH * y) + x] = colour;
+    for (int y = 0; y < win_height; y++) {
+        for (int x = 0; x < win_width; x++) {
+            colour_buf[(win_width * y) + x] = colour;
         }
     }
 }
@@ -132,7 +143,7 @@ void render_colour_buf(void)
         colour_buf_tex,
         NULL,
         colour_buf,
-        WIN_WIDTH * sizeof(uint32_t)
+        win_width * sizeof(uint32_t)
     );
     SDL_RenderCopy(renderer, colour_buf_tex, NULL, NULL);
 }
