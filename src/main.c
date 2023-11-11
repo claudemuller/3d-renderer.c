@@ -1,8 +1,4 @@
 #include "SDL.h"
-#include "SDL_events.h"
-#include "SDL_keycode.h"
-#include "SDL_render.h"
-#include "SDL_video.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -14,6 +10,7 @@ void setup(void);
 void process_input(void);
 void update(void);
 void render(void);
+void cleanup(void);
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -31,7 +28,7 @@ int main(int argc, char *argv[])
         render();
     }
 
-    SDL_Quit();
+    cleanup();
 
     return 0;
 }
@@ -106,4 +103,11 @@ void render(void)
     SDL_RenderFillRect(renderer, &rect);
 
     SDL_RenderPresent(renderer);
+}
+
+void cleanup(void)
+{
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 }
