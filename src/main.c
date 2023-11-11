@@ -17,8 +17,11 @@ void render(void);
 
 vec3_t cube_points[NUM_POINTS];
 vec2_t projeced_points[NUM_POINTS];
+
 float fov_factor = 640;
+
 vec3_t camera_pos = { 0, 0, -5 };
+vec3_t cube_rotation = { 0, 0, 0 };
 
 bool running = false;
 
@@ -106,11 +109,22 @@ void process_input(void)
 
 void update(void)
 {
+    cube_rotation.x += 0.01;
+    cube_rotation.y += 0.01;
+    cube_rotation.z += 0.01;
+
     for (int i = 0; i < NUM_POINTS; i++) {
         vec3_t point = cube_points[i];
+        vec3_t transformed_point = vec3_rotate_x(point, cube_rotation.x);
+        transformed_point = vec3_rotate_y(transformed_point, cube_rotation.y);
+        transformed_point = vec3_rotate_z(transformed_point, cube_rotation.z);
+
         // Move camera away from points
-        point.z -= camera_pos.z;
-        vec2_t projected_point = project(point);
+        transformed_point.z -= camera_pos.z;
+
+        // Project current point
+        vec2_t projected_point = project(transformed_point);
+
         projeced_points[i] = projected_point;
     }
 }
