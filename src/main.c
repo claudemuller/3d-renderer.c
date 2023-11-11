@@ -1,4 +1,5 @@
 #include "SDL.h"
+#include "SDL_render.h"
 #include <bits/posix2_lim.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -17,7 +18,10 @@ void cleanup(void);
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
+
 uint32_t *colour_buf = NULL;
+SDL_Texture *colour_buf_tex = NULL;
+
 bool running = false;
 
 int main(int argc, char *argv[])
@@ -76,6 +80,18 @@ bool setup(void)
         return false;
     }
 
+    colour_buf_tex = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING,
+        WIN_WIDTH,
+        WIN_HEIGHT
+    );
+    if (!colour_buf_tex) {
+        fprintf(stderr, "error creating colour buffer texture: %s\n", SDL_GetError());
+        return false;
+    }
+
     return true;
 }
 
@@ -101,19 +117,33 @@ void update(void)
 {
 }
 
+void clear_colour_buf(const uint32_t colour)
+{
+    for (int y = 0; y < WIN_HEIGHT; y++) {
+        for (int x = 0; x < WIN_WIDTH; x++) {
+            colour_buf[(WIN_WIDTH * y) + x] = colour;
+        }
+    }
+}
+
+void render_colour_buf(void)
+{
+    SDL_UpdateTexture(
+        colour_buf_tex,
+        NULL,
+        colour_buf,
+        WIN_WIDTH * sizeof(uint32_t)
+    );
+    SDL_RenderCopy(renderer, colour_buf_tex, NULL, NULL);
+}
+
 void render(void)
 {
-    SDL_SetRenderDrawColor(renderer, 33, 33, 33, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    SDL_Rect rect = {
-        .x = 10,
-        .y = 10,
-        .w = 100,
-        .h = 100
-    };
-    SDL_SetRenderDrawColor(renderer, 33, 255, 255, 255);
-    SDL_RenderFillRect(renderer, &rect);
+    render_colour_buf();
+    clear_colour_buf(0xFFFFFF00);
 
     SDL_RenderPresent(renderer);
 }
