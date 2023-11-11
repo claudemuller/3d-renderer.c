@@ -1,26 +1,32 @@
 #include "SDL.h"
+#include <bits/posix2_lim.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
 
 bool init_win(void);
-void setup(void);
+bool setup(void);
 void process_input(void);
 void update(void);
 void render(void);
 void cleanup(void);
 
-SDL_Window *window;
-SDL_Renderer *renderer;
+SDL_Window *window = NULL;
+SDL_Renderer *renderer = NULL;
+uint32_t *colour_buf = NULL;
 bool running = false;
 
 int main(int argc, char *argv[])
 {
     running = init_win();
 
-    setup();
+    if (!setup()) {
+        return EXIT_FAILURE;
+    }
 
     while (running) {
         process_input();
@@ -30,13 +36,13 @@ int main(int argc, char *argv[])
 
     cleanup();
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 bool init_win(void)
 {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        fprintf(stderr, "error initialising SDL: %s", SDL_GetError());
+        fprintf(stderr, "error initialising SDL: %s\n", SDL_GetError());
         return false;
     }
 
@@ -49,21 +55,28 @@ bool init_win(void)
         SDL_WINDOW_BORDERLESS
     );
     if (!window) {
-        fprintf(stderr, "error creating window: %s", SDL_GetError());
+        fprintf(stderr, "error creating window: %s\n", SDL_GetError());
         return false;
     }
 
     renderer = SDL_CreateRenderer(window, -1, 0);
     if (!renderer) {
-        fprintf(stderr, "error creating renderer: %s", SDL_GetError());
+        fprintf(stderr, "error creating renderer: %s\n", SDL_GetError());
         return false;
     }
 
     return true;
 }
 
-void setup(void)
+bool setup(void)
 {
+    colour_buf = (uint32_t *)malloc(sizeof(uint32_t) * WIN_WIDTH * WIN_HEIGHT);
+    if (!colour_buf) {
+        fprintf(stderr, "error allocating colour buffer\n");
+        return false;
+    }
+
+    return true;
 }
 
 void process_input(void)
@@ -107,6 +120,7 @@ void render(void)
 
 void cleanup(void)
 {
+    free(colour_buf);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
