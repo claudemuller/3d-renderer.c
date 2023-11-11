@@ -14,6 +14,7 @@ void process_input(void);
 void update(void);
 void clear_colour_buf(const uint32_t colour);
 void render_colour_buf(void);
+void draw_grid(void);
 void render(void);
 void cleanup(void);
 
@@ -78,7 +79,7 @@ bool init_win(void)
         return false;
     }
 
-    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+    // SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
     return true;
 }
@@ -148,13 +149,24 @@ void render_colour_buf(void)
     SDL_RenderCopy(renderer, colour_buf_tex, NULL, NULL);
 }
 
+void draw_grid(void)
+{
+    for (int y = 0; y < win_height; y += 10) {
+        for (int x = 0; x < win_width; x += 10) {
+            colour_buf[(win_width * y) + x] = 0xFF333333;
+        }
+    }
+}
+
 void render(void)
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    draw_grid();
+
     render_colour_buf();
-    clear_colour_buf(0xFFFFFF00);
+    clear_colour_buf(0xFF000000);
 
     SDL_RenderPresent(renderer);
 }
