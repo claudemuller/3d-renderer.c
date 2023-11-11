@@ -14,6 +14,8 @@ void process_input(void);
 void update(void);
 void clear_colour_buf(const uint32_t colour);
 void render_colour_buf(void);
+void draw_pixel(const int x, const int y, const uint32_t colour);
+void draw_rect(const int x, const int y, const int w, const int h, const uint32_t colour);
 void draw_grid(void);
 void render(void);
 void cleanup(void);
@@ -149,6 +151,20 @@ void render_colour_buf(void)
     SDL_RenderCopy(renderer, colour_buf_tex, NULL, NULL);
 }
 
+void draw_pixel(const int x, const int y, const uint32_t colour)
+{
+    colour_buf[(win_width * y) + x] = colour;
+}
+
+void draw_rect(const int x, const int y, const int w, const int h, const uint32_t colour)
+{
+    for (int i = y; i < y + h; i++) {
+        for (int j = x; j < x + w; j++) {
+            draw_pixel(j, i, colour);
+        }
+    }
+}
+
 void draw_grid(void)
 {
     for (int y = 0; y < win_height; y += 10) {
@@ -164,6 +180,7 @@ void render(void)
     SDL_RenderClear(renderer);
 
     draw_grid();
+    draw_rect(100, 100, 100, 100, 0xFFFF00FF);
 
     render_colour_buf();
     clear_colour_buf(0xFF000000);
