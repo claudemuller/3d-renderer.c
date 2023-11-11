@@ -15,7 +15,7 @@ extern uint32_t *colour_buf;
 extern SDL_Texture *colour_buf_tex;
 
 bool init_win(void);
-void clear_colour_buf(const uint32_t colour);
+void clear_colour_buf(uint32_t colour);
 void render_colour_buf(void);
 void draw_pixel(const int x, const int y, const uint32_t colour);
 void draw_rect(const int x, const int y, const int w, const int h, const uint32_t colour);

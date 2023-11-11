@@ -1,5 +1,6 @@
 #include "SDL.h"
 #include "display.h"
+#include "vector.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -7,9 +8,16 @@
 
 bool init_win(void);
 bool setup(void);
+vec2_t project(const vec3_t point);
 void process_input(void);
 void update(void);
 void render(void);
+
+#define NUM_POINTS (9 * 9 * 9)
+
+vec3_t cube_points[NUM_POINTS];
+vec2_t projeced_points[NUM_POINTS];
+float fov_factor = 128;
 
 bool running = false;
 
@@ -52,7 +60,27 @@ bool setup(void)
         return false;
     }
 
+    int point_counter = 0;
+    for (float x = -1; x <= 1; x += 0.25) {
+        for (float y = -1; y <= 1; y += 0.25) {
+            for (float z = -1; z <= 1; z += 0.25) {
+                vec3_t point = { x, y, z };
+                cube_points[point_counter++] = point;
+            }
+        }
+    }
+
     return true;
+}
+
+// Receives a 3D vector and returns a 2D point.
+vec2_t project(const vec3_t point)
+{
+    vec2_t projected_point = {
+        .x = (fov_factor * point.x),
+        .y = (fov_factor * point.y)
+    };
+    return projected_point;
 }
 
 void process_input(void)
@@ -75,15 +103,27 @@ void process_input(void)
 
 void update(void)
 {
+    for (int i = 0; i < NUM_POINTS; i++) {
+        vec3_t point = cube_points[i];
+        vec2_t projected_point = project(point);
+        projeced_points[i] = projected_point;
+    }
 }
 
 void render(void)
 {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-
     draw_grid();
-    draw_rect(100, 100, 100, 100, 0xFFFF00FF);
+
+    for (int i = 0; i < NUM_POINTS; i++) {
+        vec2_t p = projeced_points[i];
+        draw_rect(
+            p.x + (int)(win_width / 2),
+            p.y + (int)(win_height / 2),
+            4,
+            4,
+            0xFFFF00FF
+        );
+    }
 
     render_colour_buf();
     clear_colour_buf(0xFF000000);

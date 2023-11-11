@@ -45,7 +45,7 @@ bool init_win(void)
     return true;
 }
 
-void clear_colour_buf(const uint32_t colour)
+void clear_colour_buf(uint32_t colour)
 {
     for (int y = 0; y < win_height; y++) {
         for (int x = 0; x < win_width; x++) {
@@ -67,7 +67,9 @@ void render_colour_buf(void)
 
 void draw_pixel(const int x, const int y, const uint32_t colour)
 {
-    colour_buf[(win_width * y) + x] = colour;
+    if (x >= 0 && x < win_width && y >= 0 && y < win_height) {
+        colour_buf[(win_width * y) + x] = colour;
+    }
 }
 
 void draw_rect(const int x, const int y, const int w, const int h, const uint32_t colour)
