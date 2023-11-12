@@ -69,7 +69,7 @@ bool setup(void)
     }
 
     load_cube_mesh_data();
-    // load_obj("assets/f22.obj");
+    // load_obj("./assets/f22.obj");
 
     return true;
 }
@@ -149,10 +149,15 @@ void update(void)
         vec3_t vec_b = transformed_vertices[1]; /*   /   \   */
         vec3_t vec_c = transformed_vertices[2]; /*  C --- B  */
         vec3_t vec_ab = vec3_sub(vec_b, vec_a);
+        vec3_normalise(&vec_ab);
         vec3_t vec_ac = vec3_sub(vec_c, vec_a);
+        vec3_normalise(&vec_ac);
 
         // Compute face normal by getting the cross product to find the perpendicular
         vec3_t normal = vec3_cross(vec_ab, vec_ac);
+
+        // Normalise the face normal vector i.e. turn it into a unit vector
+        vec3_normalise(&normal);
 
         // Find vector between the triangle and the camera
         vec3_t camera_ray = vec3_sub(camera_pos, vec_a);
