@@ -9,13 +9,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-bool init_win(void);
 bool setup(void);
 vec2_t project(const vec3_t point);
 void process_input(void);
 void update(void);
 void render(void);
 void free_resources(void);
+
+enum _cull_method cull_method;
+enum _render_method render_method;
 
 float fov_factor = 640;
 
@@ -27,9 +29,14 @@ vec3_t camera_pos = { 0, 0, 0 };
 bool running = false;
 int prev_frame_time = 0;
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    running = init_win();
+    bool debug = false;
+    if (argc > 1) {
+        debug = strcmp(argv[1], "true") == 0;
+    }
+
+    running = init_win(debug);
 
     if (!setup()) {
         cleanup();
@@ -50,6 +57,9 @@ int main(void)
 
 bool setup(void)
 {
+    render_method = RENDER_WIRE;
+    cull_method = CULL_BACKFACE;
+
     colour_buf = (uint32_t *)malloc(sizeof(uint32_t) * win_width * win_height);
     if (!colour_buf) {
         fprintf(stderr, "error allocating colour buffer\n");
@@ -69,7 +79,7 @@ bool setup(void)
     }
 
     load_cube_mesh_data();
-    // load_obj("./assets/house.obj");
+    // load_obj("./assets/air-liner.obj");
 
     return true;
 }
@@ -97,8 +107,34 @@ void process_input(void)
     } break;
 
     case SDL_KEYDOWN: {
-        if (ev.key.keysym.sym == SDLK_ESCAPE) {
+        switch (ev.key.keysym.sym) {
+        case SDLK_ESCAPE: {
             running = false;
+        } break;
+
+        case SDLK_1: {
+            render_method = RENDER_WIRE_VERTEX;
+        } break;
+
+        case SDLK_2: {
+            render_method = RENDER_WIRE;
+        } break;
+
+        case SDLK_3: {
+            render_method = RENDER_FILL_TRIANGLE;
+        } break;
+
+        case SDLK_4: {
+            render_method = RENDER_FILL_TRIANGLE_WIRE;
+        } break;
+
+        case SDLK_c: {
+            cull_method = CULL_BACKFACE;
+        } break;
+
+        case SDLK_d: {
+            cull_method = CULL_NONE;
+        } break;
         }
     } break;
     }
@@ -145,29 +181,31 @@ void update(void)
         }
 
         // Check which faces need to be culled
-        vec3_t vec_a = transformed_vertices[0]; /*     A     */
-        vec3_t vec_b = transformed_vertices[1]; /*   /   \   */
-        vec3_t vec_c = transformed_vertices[2]; /*  C --- B  */
-        vec3_t vec_ab = vec3_sub(vec_b, vec_a);
-        vec3_normalise(&vec_ab);
-        vec3_t vec_ac = vec3_sub(vec_c, vec_a);
-        vec3_normalise(&vec_ac);
+        if (cull_method == CULL_BACKFACE) {
+            vec3_t vec_a = transformed_vertices[0]; /*     A     */
+            vec3_t vec_b = transformed_vertices[1]; /*   /   \   */
+            vec3_t vec_c = transformed_vertices[2]; /*  C --- B  */
+            vec3_t vec_ab = vec3_sub(vec_b, vec_a);
+            vec3_normalise(&vec_ab);
+            vec3_t vec_ac = vec3_sub(vec_c, vec_a);
+            vec3_normalise(&vec_ac);
 
-        // Compute face normal by getting the cross product to find the perpendicular
-        vec3_t normal = vec3_cross(vec_ab, vec_ac);
+            // Compute face normal by getting the cross product to find the perpendicular
+            vec3_t normal = vec3_cross(vec_ab, vec_ac);
 
-        // Normalise the face normal vector i.e. turn it into a unit vector
-        vec3_normalise(&normal);
+            // Normalise the face normal vector i.e. turn it into a unit vector
+            vec3_normalise(&normal);
 
-        // Find vector between the triangle and the camera
-        vec3_t camera_ray = vec3_sub(camera_pos, vec_a);
+            // Find vector between the triangle and the camera
+            vec3_t camera_ray = vec3_sub(camera_pos, vec_a);
 
-        // Calculate the dot product between the camera and triangle normal
-        float dot_normal_cam = vec3_dot(normal, camera_ray);
+            // Calculate the dot product between the camera and triangle normal
+            float dot_normal_cam = vec3_dot(normal, camera_ray);
 
-        // Cull if face is facing away from camera
-        if (dot_normal_cam < 0) {
-            continue;
+            // Cull if face is facing away from camera
+            if (dot_normal_cam < 0) {
+                continue;
+            }
         }
 
         triangle_t projected_triangle;
@@ -195,22 +233,33 @@ void render(void)
     for (size_t i = 0; i < (size_t)num_triangles; i++) {
         triangle_t triangle = triangles_to_render[i];
 
-        draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00);
-        draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00);
-        draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFFFF00);
+        if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE) {
+            draw_fill_triangle(
+                triangle.points[0].x, triangle.points[0].y,
+                triangle.points[1].x, triangle.points[1].y,
+                triangle.points[2].x, triangle.points[2].y,
+                0xFFFFFFF
+            );
+        }
 
-        draw_fill_triangle(
-            triangle.points[0].x, triangle.points[0].y,
-            triangle.points[1].x, triangle.points[1].y,
-            triangle.points[2].x, triangle.points[2].y,
-            0xFFFFFFF
-        );
-        draw_triangle(
-            triangle.points[0].x, triangle.points[0].y,
-            triangle.points[1].x, triangle.points[1].y,
-            triangle.points[2].x, triangle.points[2].y,
-            0xFF000000
-        );
+        if (
+            render_method == RENDER_WIRE
+            || render_method == RENDER_FILL_TRIANGLE_WIRE
+            || render_method == RENDER_WIRE_VERTEX
+        ) {
+            draw_triangle(
+                triangle.points[0].x, triangle.points[0].y,
+                triangle.points[1].x, triangle.points[1].y,
+                triangle.points[2].x, triangle.points[2].y,
+                0xFF666666
+            );
+        }
+
+        if (render_method == RENDER_WIRE_VERTEX) {
+            draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00);
+            draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00);
+            draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFFFF00);
+        }
     }
 
     // Clear triangles to render

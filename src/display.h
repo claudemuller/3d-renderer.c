@@ -10,6 +10,20 @@
 #define FPS 30
 #define FRAME_TARGET_TIME (1000 / FPS)
 
+enum _cull_method {
+    CULL_NONE,
+    CULL_BACKFACE
+};
+extern enum _cull_method cull_method;
+
+enum _render_method {
+    RENDER_WIRE,
+    RENDER_WIRE_VERTEX,
+    RENDER_FILL_TRIANGLE,
+    RENDER_FILL_TRIANGLE_WIRE,
+};
+extern enum _render_method render_method;
+
 extern int win_width;
 extern int win_height;
 
@@ -19,8 +33,8 @@ extern SDL_Renderer *renderer;
 extern uint32_t *colour_buf;
 extern SDL_Texture *colour_buf_tex;
 
-bool init_win(void);
-void clear_colour_buf(uint32_t colour);
+bool init_win(const bool debug);
+void clear_colour_buf(const uint32_t colour);
 void render_colour_buf(void);
 void draw_pixel(const int x, const int y, const uint32_t colour);
 void draw_line(const int x0, const int y0, const int x1, const int y1, const uint32_t colour);
