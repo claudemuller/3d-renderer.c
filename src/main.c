@@ -68,8 +68,8 @@ bool setup(void)
         return false;
     }
 
-    // load_cube_mesh_data();
-    load_obj("./assets/house.obj");
+    load_cube_mesh_data();
+    // load_obj("./assets/house.obj");
 
     return true;
 }
@@ -199,7 +199,18 @@ void render(void)
         draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00);
         draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFFFF00);
 
-        draw_triangle(triangle.points, 0xFFFFFF00);
+        draw_fill_triangle(
+            triangle.points[0].x, triangle.points[0].y,
+            triangle.points[1].x, triangle.points[1].y,
+            triangle.points[2].x, triangle.points[2].y,
+            0xFFFFFFF
+        );
+        draw_triangle(
+            triangle.points[0].x, triangle.points[0].y,
+            triangle.points[1].x, triangle.points[1].y,
+            triangle.points[2].x, triangle.points[2].y,
+            0xFF000000
+        );
     }
 
     // Clear triangles to render
