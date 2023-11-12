@@ -10,19 +10,19 @@
 #define FPS 30
 #define FRAME_TARGET_TIME (1000 / FPS)
 
-enum _cull_method {
+enum cull_method {
     CULL_NONE,
     CULL_BACKFACE
 };
-extern enum _cull_method cull_method;
+extern enum cull_method cull_method;
 
-enum _render_method {
+enum render_method {
     RENDER_WIRE,
     RENDER_WIRE_VERTEX,
     RENDER_FILL_TRIANGLE,
     RENDER_FILL_TRIANGLE_WIRE,
 };
-extern enum _render_method render_method;
+extern enum render_method render_method;
 
 extern int win_width;
 extern int win_height;

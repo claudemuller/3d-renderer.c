@@ -16,10 +16,8 @@ void update(void);
 void render(void);
 void free_resources(void);
 
-enum _cull_method cull_method;
-enum _render_method render_method;
-
 float fov_factor = 640;
+int zoom = 2;
 
 // Stores the 2D projected points to be drawn
 triangle_t *triangles_to_render = NULL;
@@ -78,8 +76,8 @@ bool setup(void)
         return false;
     }
 
-    load_cube_mesh_data();
-    // load_obj("./assets/air-liner.obj");
+    // load_cube_mesh_data();
+    load_obj("./assets/air-liner.obj");
 
     return true;
 }
@@ -113,11 +111,11 @@ void process_input(void)
         } break;
 
         case SDLK_1: {
-            render_method = RENDER_WIRE_VERTEX;
+            render_method = RENDER_WIRE;
         } break;
 
         case SDLK_2: {
-            render_method = RENDER_WIRE;
+            render_method = RENDER_WIRE_VERTEX;
         } break;
 
         case SDLK_3: {
@@ -175,7 +173,7 @@ void update(void)
             transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
 
             // Translate vertex away from camera in z
-            transformed_vertex.z += 5;
+            transformed_vertex.z += zoom;
 
             transformed_vertices[j] = transformed_vertex;
         }
@@ -256,9 +254,9 @@ void render(void)
         }
 
         if (render_method == RENDER_WIRE_VERTEX) {
-            draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00);
-            draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00);
-            draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFFFF00);
+            draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFF0000);
+            draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFF0000);
+            draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFF0000);
         }
     }
 

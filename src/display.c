@@ -2,6 +2,9 @@
 #include "display.h"
 #include "triangle.h"
 
+enum cull_method cull_method;
+enum render_method render_method;
+
 int win_width = 800;
 int win_height = 600;
 
@@ -145,7 +148,7 @@ void draw_ui(SDL_Renderer *renderer)
         fprintf(stderr, "error loading font: %s\n", SDL_GetError());
     }
 
-    char *ui = "<1> - wire vertex\n<2> - wire\n<3> - fill triangle\n<4> - fill triangle wire\n<c> - cull backface\n<d> - cull none\n<esc> - quit";
+    char *ui = "<1> - wire\n<2> - wire vertex\n<3> - fill triangle\n<4> - fill triangle wire\n<c> - cull backface\n<d> - cull none\n<esc> - quit";
     SDL_Color white = { 62, 81, 100, 255 };
 
     SDL_Surface *msg_surface = TTF_RenderText_Solid_Wrapped(font, ui, white, 0);
