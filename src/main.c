@@ -225,16 +225,33 @@ void update(void)
             projected_points[j].y += win_height / 2.0;
         }
 
+        // Average depth of face based off avg z of translated vertices
+        float avg_depth_z = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z)
+            / NUM_TRIANGLE_VERTICES;
+
         triangle_t projected_triangle = {
             .points = {
                 { projected_points[0].x, projected_points[0].y },
                 { projected_points[1].x, projected_points[1].y },
                 { projected_points[2].x, projected_points[2].y },
             },
-            .colour = mesh_face.colour
+            .colour = mesh_face.colour,
+            .avg_depth = avg_depth_z
         };
 
         array_push(triangles_to_render, projected_triangle);
+    }
+
+    // Sort faces based on depth with bubble sort
+    size_t num_triangles = array_length(triangles_to_render);
+    for (size_t i = 0; i < num_triangles; i++) {
+        for (size_t j = 0; j < num_triangles; j++) {
+            if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) {
+                triangle_t temp = triangles_to_render[i];
+                triangles_to_render[i] = triangles_to_render[j];
+                triangles_to_render[j] = temp;
+            }
+        }
     }
 }
 
@@ -242,8 +259,8 @@ void render(void)
 {
     draw_grid();
 
-    int num_triangles = array_length(triangles_to_render);
-    for (size_t i = 0; i < (size_t)num_triangles; i++) {
+    size_t num_triangles = array_length(triangles_to_render);
+    for (size_t i = 0; i < num_triangles; i++) {
         triangle_t triangle = triangles_to_render[i];
 
         if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE) {
