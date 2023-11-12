@@ -127,7 +127,6 @@ void draw_grid(void)
 
 void cleanup(void)
 {
-    free(colour_buf);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
