@@ -113,6 +113,7 @@ void update(void)
     for (int i = 0; i < NUM_MESH_FACES; i++) {
         face_t mesh_face = mesh_faces[i];
 
+        // Triangle face vertices
         vec3_t face_vertices[NUM_TRIANGLE_VERTICES] = {
             mesh_vertices[mesh_face.a - 1],
             mesh_vertices[mesh_face.b - 1],
@@ -129,7 +130,7 @@ void update(void)
             // Translate vertex away from camera in z
             transformed_vertex.z -= camera_pos.z;
 
-            // Project current point
+            // Project current point to a 2D vector to draw
             vec2_t projected_point = project(transformed_vertex);
 
             // Scale and translate projected point to centre of screen
@@ -149,9 +150,12 @@ void render(void)
 
     for (int i = 0; i < NUM_MESH_FACES; i++) {
         triangle_t triangle = triangles_to_render[i];
+
         draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00);
         draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00);
         draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFFFF00);
+
+        draw_triangle(triangle.points, 0xFFFFFF00);
     }
 
     render_colour_buf();
