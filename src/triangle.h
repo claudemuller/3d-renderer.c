@@ -8,12 +8,14 @@ typedef struct {
 	int a;
 	int b;
 	int c;
+	uint32_t colour;
 } face_t;
 
 #define NUM_TRIANGLE_VERTICES 3
 
 typedef struct {
 	vec2_t points[NUM_TRIANGLE_VERTICES];
+	uint32_t colour;
 } triangle_t;
 
 void draw_fill_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t colour);

@@ -17,7 +17,7 @@ void render(void);
 void free_resources(void);
 
 float fov_factor = 640;
-int zoom = 2;
+int zoom = 5;
 
 // Stores the 2D projected points to be drawn
 triangle_t *triangles_to_render = NULL;
@@ -76,8 +76,8 @@ bool setup(void)
         return false;
     }
 
-    // load_cube_mesh_data();
-    load_obj("./assets/air-liner.obj");
+    load_cube_mesh_data();
+    // load_obj("./assets/air-liner.obj");
 
     return true;
 }
@@ -206,18 +206,24 @@ void update(void)
             }
         }
 
-        triangle_t projected_triangle;
-
+        vec2_t projected_points[NUM_TRIANGLE_VERTICES];
         for (size_t j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
             // Project current point to a 2D vector to draw
-            vec2_t projected_point = project(transformed_vertices[j]);
+            projected_points[j] = project(transformed_vertices[j]);
 
             // Scale and translate projected point to centre of screen
-            projected_point.x += win_width / 2.0;
-            projected_point.y += win_height / 2.0;
-
-            projected_triangle.points[j] = projected_point;
+            projected_points[j].x += win_width / 2.0;
+            projected_points[j].y += win_height / 2.0;
         }
+
+        triangle_t projected_triangle = {
+            .points = {
+                { projected_points[0].x, projected_points[0].y },
+                { projected_points[1].x, projected_points[1].y },
+                { projected_points[2].x, projected_points[2].y },
+            },
+            .colour = mesh_face.colour
+        };
 
         array_push(triangles_to_render, projected_triangle);
     }
@@ -236,7 +242,7 @@ void render(void)
                 triangle.points[0].x, triangle.points[0].y,
                 triangle.points[1].x, triangle.points[1].y,
                 triangle.points[2].x, triangle.points[2].y,
-                0xFFFFFFF
+                triangle.colour
             );
         }
 
