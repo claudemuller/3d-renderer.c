@@ -1,4 +1,5 @@
 #include "SDL.h"
+#include "SDL_events.h"
 #include "array.h"
 #include "display.h"
 #include "mesh.h"
@@ -76,8 +77,8 @@ bool setup(void)
         return false;
     }
 
-    // load_cube_mesh_data();
-    load_obj("./assets/f22.obj");
+    load_cube_mesh_data();
+    // load_obj("./assets/f22.obj");
 
     return true;
 }
@@ -135,13 +136,20 @@ void process_input(void)
         } break;
         }
     } break;
+
+    case SDL_MOUSEWHEEL: {
+        if (ev.wheel.y < 0) {
+            zoom += 1;
+        } else if (ev.wheel.y > 0) {
+            zoom += -1;
+        }
+    } break;
     }
 }
 
 void update(void)
 {
     int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - prev_frame_time);
-    printf("%d\n", time_to_wait);
     if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
         SDL_Delay(time_to_wait);
     }
