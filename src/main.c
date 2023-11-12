@@ -76,8 +76,8 @@ bool setup(void)
         return false;
     }
 
-    load_cube_mesh_data();
-    // load_obj("./assets/air-liner.obj");
+    // load_cube_mesh_data();
+    load_obj("./assets/f22.obj");
 
     return true;
 }
@@ -141,6 +141,7 @@ void process_input(void)
 void update(void)
 {
     int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - prev_frame_time);
+    printf("%d\n", time_to_wait);
     if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
         SDL_Delay(time_to_wait);
     }
