@@ -22,7 +22,7 @@ float fov_factor = 640;
 // Stores the 2D projected points to be drawn
 triangle_t *triangles_to_render = NULL;
 
-vec3_t camera_pos = { 0, 0, -5 };
+vec3_t camera_pos = { 0, 0, 0 };
 
 bool running = false;
 int prev_frame_time = 0;
@@ -68,8 +68,8 @@ bool setup(void)
         return false;
     }
 
-    // load_cube_mesh_data();
-    load_obj("assets/f22.obj");
+    load_cube_mesh_data();
+    // load_obj("assets/f22.obj");
 
     return true;
 }
@@ -116,8 +116,8 @@ void update(void)
     triangles_to_render = NULL;
 
     mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.00;
-    mesh.rotation.z += 0.00;
+    mesh.rotation.y += 0.01;
+    mesh.rotation.z += 0.01;
 
     size_t num_faces = array_length(mesh.faces);
     for (size_t i = 0; i < num_faces; i++) {
@@ -130,7 +130,8 @@ void update(void)
             mesh.vertices[mesh_face.c - 1],
         };
 
-        triangle_t projected_triangle;
+        vec3_t transformed_vertices[NUM_TRIANGLE_VERTICES];
+
         for (size_t j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
             vec3_t transformed_vertex = face_vertices[j];
             transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
@@ -140,8 +141,35 @@ void update(void)
             // Translate vertex away from camera in z
             transformed_vertex.z += 5;
 
+            transformed_vertices[j] = transformed_vertex;
+        }
+
+        // Check which faces need to be culled
+        vec3_t vec_a = transformed_vertices[0]; /*     A     */
+        vec3_t vec_b = transformed_vertices[1]; /*   /   \   */
+        vec3_t vec_c = transformed_vertices[2]; /*  C --- B  */
+        vec3_t vec_ab = vec3_sub(vec_b, vec_a);
+        vec3_t vec_ac = vec3_sub(vec_c, vec_a);
+
+        // Compute face normal by getting the cross product to find the perpendicular
+        vec3_t normal = vec3_cross(vec_ab, vec_ac);
+
+        // Find vector between the triangle and the camera
+        vec3_t camera_ray = vec3_sub(camera_pos, vec_a);
+
+        // Calculate the dot product between the camera and triangle normal
+        float dot_normal_cam = vec3_dot(normal, camera_ray);
+
+        // Cull if face is facing away from camera
+        if (dot_normal_cam < 0) {
+            continue;
+        }
+
+        triangle_t projected_triangle;
+
+        for (size_t j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
             // Project current point to a 2D vector to draw
-            vec2_t projected_point = project(transformed_vertex);
+            vec2_t projected_point = project(transformed_vertices[j]);
 
             // Scale and translate projected point to centre of screen
             projected_point.x += win_width / 2.0;

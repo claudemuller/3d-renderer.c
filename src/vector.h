@@ -28,7 +28,6 @@ vec3_t vec3_div(const vec3_t v, const float f);
 vec3_t vec3_cross(const vec3_t v1, const vec3_t v2);
 float vec3_dot(const vec3_t v1, const vec3_t v2);
 void vec3_normalise(vec3_t *v);
-
 vec3_t vec3_rotate_x(const vec3_t v, const float angle);
 vec3_t vec3_rotate_y(const vec3_t v, const float angle);
 vec3_t vec3_rotate_z(const vec3_t v, const float angle);
