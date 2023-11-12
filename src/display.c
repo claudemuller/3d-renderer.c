@@ -1,4 +1,4 @@
-#include "SDL_video.h"
+#include "SDL_ttf.h"
 #include "display.h"
 #include "triangle.h"
 
@@ -44,6 +44,8 @@ bool init_win(void)
         fprintf(stderr, "error creating renderer: %s\n", SDL_GetError());
         return false;
     }
+
+    TTF_Init();
 
     // SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
@@ -109,9 +111,12 @@ void draw_triangle(const vec2_t vertices[NUM_TRIANGLE_VERTICES], const uint32_t 
 
 void draw_rect(const int x, const int y, const int w, const int h, const uint32_t colour)
 {
-    for (int i = y; i < y + h; i++) {
-        for (int j = x; j < x + w; j++) {
-            draw_pixel(j, i, colour);
+    int cur_x = 0, cur_y = 0;
+    for (int i = 0; i < w; i++) {
+        for (int j = 0; j < h; j++) {
+            cur_x = x + i;
+            cur_y = y + j;
+            draw_pixel(cur_x, cur_y, colour);
         }
     }
 }
@@ -123,6 +128,42 @@ void draw_grid(void)
             colour_buf[(win_width * y) + x] = 0xFF333333;
         }
     }
+}
+
+void draw_ui(SDL_Renderer *renderer)
+{
+    int font_size = 12;
+    TTF_Font *font = TTF_OpenFont("./assets/fonts/FiraCode-Regular.ttf", font_size);
+    if (!font) {
+        fprintf(stderr, "error loading font: %s\n", SDL_GetError());
+    }
+
+    // char *ui = "<1> - wire vertex\n<2> - wire\n<3> - fill triangle\n<4> - fill triangle wire\n<c> - cull backface\n<d> - cull none\n<esc> - quit";
+    char *ui = "<esc> - quit";
+    SDL_Color white = { 62, 81, 100, 255 };
+
+    SDL_Surface *msg_surface = TTF_RenderText_Solid_Wrapped(font, ui, white, 0);
+    if (!msg_surface) {
+        fprintf(stderr, "error creating surface: %s\n", SDL_GetError());
+    }
+
+    SDL_Texture *msg_tex = SDL_CreateTextureFromSurface(renderer, msg_surface);
+    if (!msg_tex) {
+        fprintf(stderr, "error creating texture: %s\n", SDL_GetError());
+    }
+    SDL_FreeSurface(msg_surface);
+
+    int w = 0, h = 0;
+    SDL_QueryTexture(msg_tex, NULL, NULL, &w, &h);
+    SDL_Rect msg_rect;
+    msg_rect.x = 15;
+    msg_rect.y = 10;
+    msg_rect.w = w;
+    msg_rect.h = h;
+
+    SDL_RenderCopy(renderer, msg_tex, NULL, &msg_rect);
+    SDL_DestroyTexture(msg_tex);
+    TTF_CloseFont(font);
 }
 
 void cleanup(void)

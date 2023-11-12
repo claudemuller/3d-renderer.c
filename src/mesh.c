@@ -84,17 +84,10 @@ bool load_obj(const char *filename)
             int texture_indices[3];
             int normal_indices[3];
             sscanf(
-                line,
-                "f %d/%d/%d %d/%d/%d %d/%d/%d ",
-                &vertex_indices[0],
-                &texture_indices[0],
-                &normal_indices[0],
-                &vertex_indices[1],
-                &texture_indices[1],
-                &normal_indices[1],
-                &vertex_indices[2],
-                &texture_indices[2],
-                &normal_indices[2]
+                line, "f %d/%d/%d %d/%d/%d %d/%d/%d ",
+                &vertex_indices[0], &texture_indices[0], &normal_indices[0],
+                &vertex_indices[1], &texture_indices[1], &normal_indices[1],
+                &vertex_indices[2], &texture_indices[2], &normal_indices[2]
             );
             face_t face = {
                 .a = vertex_indices[0],

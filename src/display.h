@@ -27,6 +27,7 @@ void draw_line(const int x0, const int y0, const int x1, const int y1, const uin
 void draw_triangle(const vec2_t vertices[NUM_TRIANGLE_VERTICES], const uint32_t colour);
 void draw_rect(const int x, const int y, const int w, const int h, const uint32_t colour);
 void draw_grid(void);
+void draw_ui(SDL_Renderer *renderer);
 
 void cleanup(void);
 

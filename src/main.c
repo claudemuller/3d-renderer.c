@@ -32,6 +32,7 @@ int main(void)
     running = init_win();
 
     if (!setup()) {
+        cleanup();
         return EXIT_FAILURE;
     }
 
@@ -118,8 +119,8 @@ void update(void)
     mesh.rotation.y += 0.00;
     mesh.rotation.z += 0.00;
 
-    int num_faces = array_length(mesh.faces);
-    for (int i = 0; i < num_faces; i++) {
+    size_t num_faces = array_length(mesh.faces);
+    for (size_t i = 0; i < num_faces; i++) {
         face_t mesh_face = mesh.faces[i];
 
         // Triangle face vertices
@@ -137,14 +138,14 @@ void update(void)
             transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
 
             // Translate vertex away from camera in z
-            transformed_vertex.z -= camera_pos.z;
+            transformed_vertex.z += 5;
 
             // Project current point to a 2D vector to draw
             vec2_t projected_point = project(transformed_vertex);
 
             // Scale and translate projected point to centre of screen
-            projected_point.x += (float)win_width / 2;
-            projected_point.y += (float)win_height / 2;
+            projected_point.x += win_width / 2.0;
+            projected_point.y += win_height / 2.0;
 
             projected_triangle.points[j] = projected_point;
         }
@@ -173,6 +174,8 @@ void render(void)
 
     render_colour_buf();
     clear_colour_buf(0xFF000000);
+
+    draw_ui(renderer);
 
     SDL_RenderPresent(renderer);
 }
