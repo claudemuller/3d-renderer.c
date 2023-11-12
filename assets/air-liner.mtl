@@ -1,0 +1,82 @@
+# Blender 3.6.5 MTL File: 'None'
+# www.blender.org
+
+newmtl mat_0-A320.jpg
+Ns 9.849158
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd /home/lukefilewalker/temp/A320.jpg
+
+newmtl mat_1-qlj1-0.jpg
+Ns 9.849158
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd /home/lukefilewalker/temp/qlj1-0.jpg
+
+newmtl mat_2-default-grey.jpg
+Ns 9.849158
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd /home/lukefilewalker/temp/default-grey.jpg
+
+newmtl mat_3-wheel.jpg
+Ns 9.849158
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd /home/lukefilewalker/temp/wheel.jpg
+
+newmtl mat_4-yinqin-0.jpg
+Ns 9.849158
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd /home/lukefilewalker/temp/yinqin-0.jpg
+
+newmtl mat_5-wheel_side.jpg
+Ns 9.849158
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd /home/lukefilewalker/temp/wheel_side.jpg
+
+newmtl mat_6-qlj2-0.jpg
+Ns 9.849158
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd /home/lukefilewalker/temp/qlj2-0.jpg
+
+newmtl mat_7-default-grey.jpg
+Ns 9.849158
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd /home/lukefilewalker/temp/default-grey.jpg
