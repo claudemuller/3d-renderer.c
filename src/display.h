@@ -23,6 +23,7 @@ void render_colour_buf(void);
 void draw_pixel(const int x, const int y, const uint32_t colour);
 void draw_rect(const int x, const int y, const int w, const int h, const uint32_t colour);
 void draw_grid(void);
+
 void cleanup(void);
 
 #endif // DISPLAY_H
