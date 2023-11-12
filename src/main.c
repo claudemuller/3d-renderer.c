@@ -131,7 +131,7 @@ void update(void)
         };
 
         triangle_t projected_triangle;
-        for (int j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
+        for (size_t j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
             vec3_t transformed_vertex = face_vertices[j];
             transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
             transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
@@ -159,7 +159,7 @@ void render(void)
     draw_grid();
 
     int num_triangles = array_length(triangles_to_render);
-    for (int i = 0; i < num_triangles; i++) {
+    for (size_t i = 0; i < (size_t)num_triangles; i++) {
         triangle_t triangle = triangles_to_render[i];
 
         draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00);

@@ -54,8 +54,8 @@ bool init_win(void)
 
 void clear_colour_buf(uint32_t colour)
 {
-    for (int y = 0; y < win_height; y++) {
-        for (int x = 0; x < win_width; x++) {
+    for (size_t y = 0; y < (size_t)win_height; y++) {
+        for (size_t x = 0; x < (size_t)win_width; x++) {
             colour_buf[(win_width * y) + x] = colour;
         }
     }
@@ -95,7 +95,7 @@ void draw_line(const int x0, const int y0, const int x1, const int y1, const uin
     float cur_x = x0;
     float cur_y = y0;
 
-    for (int i = 0; i <= longest_side_len; i++) {
+    for (size_t i = 0; i <= (size_t)longest_side_len; i++) {
         draw_pixel(round(cur_x), round(cur_y), colour);
         cur_x += x_inc;
         cur_y += y_inc;
@@ -112,8 +112,8 @@ void draw_triangle(const vec2_t vertices[NUM_TRIANGLE_VERTICES], const uint32_t 
 void draw_rect(const int x, const int y, const int w, const int h, const uint32_t colour)
 {
     int cur_x = 0, cur_y = 0;
-    for (int i = 0; i < w; i++) {
-        for (int j = 0; j < h; j++) {
+    for (size_t i = 0; i < (size_t)w; i++) {
+        for (size_t j = 0; j < (size_t)h; j++) {
             cur_x = x + i;
             cur_y = y + j;
             draw_pixel(cur_x, cur_y, colour);
@@ -123,8 +123,8 @@ void draw_rect(const int x, const int y, const int w, const int h, const uint32_
 
 void draw_grid(void)
 {
-    for (int y = 0; y < win_height; y += 10) {
-        for (int x = 0; x < win_width; x += 10) {
+    for (size_t y = 0; y < (size_t)win_height; y += 10) {
+        for (size_t x = 0; x < (size_t)win_width; x += 10) {
             colour_buf[(win_width * y) + x] = 0xFF333333;
         }
     }
