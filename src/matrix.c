@@ -1,5 +1,6 @@
 #include "matrix.h"
 #include <math.h>
+#include <stddef.h>
 
 mat4_t mat4_identity(void)
 {
@@ -117,4 +118,19 @@ vec4_t mat4_mul_vec4(const mat4_t m, const vec4_t v)
         .z = m.m[2][0] * v.x + m.m[2][1] * v.y + m.m[2][2] * v.z + m.m[2][3] * v.w,
         .w = m.m[3][0] * v.x + m.m[3][1] * v.y + m.m[3][2] * v.z + m.m[3][3] * v.w,
     };
+}
+
+mat4_t mat4_mul_mat4(const mat4_t m1, const mat4_t m2)
+{
+    mat4_t m;
+    for (size_t i = 0; i < 4; i++) {
+        for (size_t j = 0; j < 4; j++) {
+            m.m[i][j] = m1.m[i][0] * m2.m[0][j]
+                + m1.m[i][1] * m2.m[1][j]
+                + m1.m[i][2] * m2.m[2][j]
+                + m1.m[i][3] * m2.m[3][j];
+        }
+    }
+
+    return m;
 }

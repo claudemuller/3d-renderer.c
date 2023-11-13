@@ -77,8 +77,8 @@ bool setup(void)
         return false;
     }
 
-    // load_cube_mesh_data();
-    load_obj("./assets/f22.obj");
+    load_cube_mesh_data();
+    // load_obj("./assets/f22.obj");
 
     return true;
 }
@@ -138,13 +138,12 @@ void process_input(void)
 // Receives a 3D vector and returns a 2D point.
 vec2_t project(const vec3_t point)
 {
-    vec2_t projected_point = {
+    return (vec2_t) {
         // p'x = px / pz
         .x = (fov_factor * point.x) / point.z,
         // p'y = py / pz
         .y = (fov_factor * point.y) / point.z
     };
-    return projected_point;
 }
 
 void update(void)
@@ -192,12 +191,15 @@ void update(void)
         for (size_t j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
             vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 
-            // Scale -> rotate -> translate in that order
-            transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
-            transformed_vertex = mat4_mul_vec4(rotation_matrix_x, transformed_vertex);
-            transformed_vertex = mat4_mul_vec4(rotation_matrix_y, transformed_vertex);
-            transformed_vertex = mat4_mul_vec4(rotation_matrix_z, transformed_vertex);
-            transformed_vertex = mat4_mul_vec4(translation_matrix, transformed_vertex);
+            // Create a world matrix with scale/rotation/translation matrices
+            mat4_t world_matrix = mat4_identity();
+            world_matrix = mat4_mul_mat4(scale_matrix, world_matrix);
+            world_matrix = mat4_mul_mat4(rotation_matrix_x, world_matrix);
+            world_matrix = mat4_mul_mat4(rotation_matrix_y, world_matrix);
+            world_matrix = mat4_mul_mat4(rotation_matrix_z, world_matrix);
+            world_matrix = mat4_mul_mat4(translation_matrix, world_matrix);
+
+            transformed_vertex = mat4_mul_vec4(world_matrix, transformed_vertex);
 
             transformed_vertices[j] = transformed_vertex;
         }

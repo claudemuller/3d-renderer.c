@@ -14,5 +14,6 @@ mat4_t mat4_make_rotation_x(const float angle);
 mat4_t mat4_make_rotation_y(const float angle);
 mat4_t mat4_make_rotation_z(const float angle);
 vec4_t mat4_mul_vec4(const mat4_t m, const vec4_t v);
+mat4_t mat4_mul_mat4(const mat4_t m1, const mat4_t m2);
 
 #endif // MATRIX_H
