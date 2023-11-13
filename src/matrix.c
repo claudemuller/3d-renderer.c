@@ -1,4 +1,5 @@
 #include "matrix.h"
+#include <math.h>
 
 mat4_t mat4_identity(void)
 {
@@ -50,18 +51,60 @@ mat4_t mat4_make_translation(const float tx, const float ty, const float tz)
     return m;
 }
 
-mat4_t mat4_make_rotation(const float tx, const float ty, const float tz)
+mat4_t mat4_make_rotation_x(const float angle)
 {
+    float c = cos(angle);
+    float s = sin(angle);
     /*
      *  |  1  0  0  0  |
+     *  |  0  c -s  0  |
+     *  |  0  s  c  0  |
+     *  |  0  0  0  1  |
+     */
+    mat4_t m = mat4_identity();
+    m.m[1][1] = c;
+    m.m[1][2] = -s;
+    m.m[2][1] = s;
+    m.m[2][2] = c;
+
+    return m;
+}
+
+mat4_t mat4_make_rotation_y(const float angle)
+{
+    float c = cos(angle);
+    float s = sin(angle);
+    /*
+     * The sin and -sin are inverted for left-handed/clocwise rotation
+     *  |  c  0  s  0  |
      *  |  0  1  0  0  |
+     *  | -s  0  c  0  |
+     *  |  0  0  0  1  |
+     */
+    mat4_t m = mat4_identity();
+    m.m[0][0] = c;
+    m.m[0][2] = s;
+    m.m[2][0] = -s;
+    m.m[2][2] = c;
+
+    return m;
+}
+
+mat4_t mat4_make_rotation_z(const float angle)
+{
+    float c = cos(angle);
+    float s = sin(angle);
+    /*
+     *  |  c -s  0  0  |
+     *  |  s  c  0  0  |
      *  |  0  0  1  0  |
      *  |  0  0  0  1  |
      */
     mat4_t m = mat4_identity();
-    m.m[0][3] = tx;
-    m.m[1][3] = ty;
-    m.m[2][3] = tz;
+    m.m[0][0] = c;
+    m.m[0][1] = -s;
+    m.m[1][0] = s;
+    m.m[1][1] = c;
 
     return m;
 }
