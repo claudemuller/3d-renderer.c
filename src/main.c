@@ -18,7 +18,7 @@ void render(void);
 void free_resources(void);
 
 float fov_factor = 640;
-int zoom = 5;
+float zoom = 5.0;
 
 // Stores the 2D projected points to be drawn
 triangle_t *triangles_to_render = NULL;
@@ -127,9 +127,9 @@ void process_input(void)
 
     case SDL_MOUSEWHEEL: {
         if (ev.wheel.y < 0) {
-            zoom += 1;
+            zoom += 0.5;
         } else if (ev.wheel.y > 0) {
-            zoom += -1;
+            zoom += -0.5;
         }
     } break;
     }
@@ -158,17 +158,20 @@ void update(void)
     // Initialise triangles to render
     triangles_to_render = NULL;
 
-    // Change mesh rotation with rotation matrix
-    mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.01;
-    mesh.rotation.z += 0.01;
+    // Change mesh rotation/scale/translation with matrix
+    // mesh.rotation.x += 0.01;
+    // mesh.rotation.y += 0.01;
+    // mesh.rotation.z += 0.01;
+    // mesh.scale.x += 0.002;
+    // mesh.scale.y += 0.001;
+    mesh.translation.x += 0.01;
+    mesh.translation.z = zoom;
 
-    // Change mesh scale with scale matrix
-    mesh.scale.x += 0.002;
-    mesh.scale.y += 0.001;
-
-    // Create scale matrix to scale mesh
+    // Create rotation/scale/translation matrix to scale mesh
     mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+    mat4_t translation_matrix = mat4_make_translation(
+        mesh.translation.x, mesh.translation.y, mesh.translation.z
+    );
 
     size_t num_faces = array_length(mesh.faces);
     for (size_t i = 0; i < num_faces; i++) {
@@ -186,9 +189,7 @@ void update(void)
         for (size_t j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
             vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
             transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
-
-            // Translate vertex away from camera in z
-            transformed_vertex.z += zoom;
+            transformed_vertex = mat4_mul_vec4(translation_matrix, transformed_vertex);
 
             transformed_vertices[j] = transformed_vertex;
         }

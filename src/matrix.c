@@ -34,6 +34,38 @@ mat4_t mat4_make_scale(const float sx, const float sy, const float sz)
     return m;
 }
 
+mat4_t mat4_make_translation(const float tx, const float ty, const float tz)
+{
+    /*
+     *  |  1  0  0 tx  |
+     *  |  0  1  0 ty  |
+     *  |  0  0  1 tz  |
+     *  |  0  0  0  1  |
+     */
+    mat4_t m = mat4_identity();
+    m.m[0][3] = tx;
+    m.m[1][3] = ty;
+    m.m[2][3] = tz;
+
+    return m;
+}
+
+mat4_t mat4_make_rotation(const float tx, const float ty, const float tz)
+{
+    /*
+     *  |  1  0  0  0  |
+     *  |  0  1  0  0  |
+     *  |  0  0  1  0  |
+     *  |  0  0  0  1  |
+     */
+    mat4_t m = mat4_identity();
+    m.m[0][3] = tx;
+    m.m[1][3] = ty;
+    m.m[2][3] = tz;
+
+    return m;
+}
+
 vec4_t mat4_mul_vec4(const mat4_t m, const vec4_t v)
 {
     return (vec4_t) {
