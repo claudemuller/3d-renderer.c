@@ -77,8 +77,8 @@ bool setup(void)
         return false;
     }
 
-    load_cube_mesh_data();
-    // load_obj("./assets/f22.obj");
+    // load_cube_mesh_data();
+    load_obj("./assets/f22.obj");
 
     return true;
 }
