@@ -1,7 +1,7 @@
 CC = gcc
 DBG_BIN = gdb
 CFLAGS = # -D_GNU_SOURCE
-CFLAGS += -std=c11
+CFLAGS += -std=gnu11
 CFLAGS += -Wall
 CFLAGS += -Wextra
 CFLAGS += -pedantic

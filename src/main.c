@@ -1,7 +1,7 @@
 #include "SDL.h"
-#include "SDL_events.h"
 #include "array.h"
 #include "display.h"
+#include "matrix.h"
 #include "mesh.h"
 #include "triangle.h"
 #include "vector.h"
@@ -11,8 +11,8 @@
 #include <stdlib.h>
 
 bool setup(void);
-vec2_t project(const vec3_t point);
 void process_input(void);
+vec2_t project(const vec3_t point);
 void update(void);
 void render(void);
 void free_resources(void);
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 {
     bool debug = false;
     if (argc > 1) {
-        debug = strcmp(argv[1], "true") == 0;
+        debug = strncmp(argv[1], "true", 4) == 0;
     }
 
     running = init_win(debug);
@@ -81,18 +81,6 @@ bool setup(void)
     // load_obj("./assets/f22.obj");
 
     return true;
-}
-
-// Receives a 3D vector and returns a 2D point.
-vec2_t project(const vec3_t point)
-{
-    vec2_t projected_point = {
-        // p'x = px / pz
-        .x = (fov_factor * point.x) / point.z,
-        // p'y = py / pz
-        .y = (fov_factor * point.y) / point.z
-    };
-    return projected_point;
 }
 
 void process_input(void)
@@ -147,6 +135,18 @@ void process_input(void)
     }
 }
 
+// Receives a 3D vector and returns a 2D point.
+vec2_t project(const vec3_t point)
+{
+    vec2_t projected_point = {
+        // p'x = px / pz
+        .x = (fov_factor * point.x) / point.z,
+        // p'y = py / pz
+        .y = (fov_factor * point.y) / point.z
+    };
+    return projected_point;
+}
+
 void update(void)
 {
     int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - prev_frame_time);
@@ -158,9 +158,17 @@ void update(void)
     // Initialise triangles to render
     triangles_to_render = NULL;
 
+    // Change mesh rotation with rotation matrix
     mesh.rotation.x += 0.01;
     mesh.rotation.y += 0.01;
     mesh.rotation.z += 0.01;
+
+    // Change mesh scale with scale matrix
+    mesh.scale.x += 0.002;
+    mesh.scale.y += 0.001;
+
+    // Create scale matrix to scale mesh
+    mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
 
     size_t num_faces = array_length(mesh.faces);
     for (size_t i = 0; i < num_faces; i++) {
@@ -173,13 +181,11 @@ void update(void)
             mesh.vertices[mesh_face.c - 1],
         };
 
-        vec3_t transformed_vertices[NUM_TRIANGLE_VERTICES];
+        vec4_t transformed_vertices[NUM_TRIANGLE_VERTICES];
 
         for (size_t j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
-            vec3_t transformed_vertex = face_vertices[j];
-            transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
-            transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
-            transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
+            vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
+            transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
 
             // Translate vertex away from camera in z
             transformed_vertex.z += zoom;
@@ -189,9 +195,9 @@ void update(void)
 
         // Check which faces need to be culled
         if (cull_method == CULL_BACKFACE) {
-            vec3_t vec_a = transformed_vertices[0]; /*     A     */
-            vec3_t vec_b = transformed_vertices[1]; /*   /   \   */
-            vec3_t vec_c = transformed_vertices[2]; /*  C --- B  */
+            vec3_t vec_a = vec3_from_vec4(transformed_vertices[0]); /*     A     */
+            vec3_t vec_b = vec3_from_vec4(transformed_vertices[1]); /*   /   \   */
+            vec3_t vec_c = vec3_from_vec4(transformed_vertices[2]); /*  C --- B  */
             vec3_t vec_ab = vec3_sub(vec_b, vec_a);
             vec3_normalise(&vec_ab);
             vec3_t vec_ac = vec3_sub(vec_c, vec_a);
@@ -218,7 +224,7 @@ void update(void)
         vec2_t projected_points[NUM_TRIANGLE_VERTICES];
         for (size_t j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
             // Project current point to a 2D vector to draw
-            projected_points[j] = project(transformed_vertices[j]);
+            projected_points[j] = project(vec3_from_vec4(transformed_vertices[j]));
 
             // Scale and translate projected point to centre of screen
             projected_points[j].x += win_width / 2.0;

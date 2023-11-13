@@ -12,6 +12,13 @@ typedef struct {
 	float z;
 } vec3_t;
 
+typedef struct {
+	float x;
+	float y;
+	float z;
+	float w;
+} vec4_t;
+
 float vec2_length(const vec2_t v);
 vec2_t vec2_add(const vec2_t v1, const vec2_t v2);
 vec2_t vec2_sub(const vec2_t v1, const vec2_t v2);
@@ -31,5 +38,8 @@ void vec3_normalise(vec3_t *v);
 vec3_t vec3_rotate_x(const vec3_t v, const float angle);
 vec3_t vec3_rotate_y(const vec3_t v, const float angle);
 vec3_t vec3_rotate_z(const vec3_t v, const float angle);
+
+vec4_t vec4_from_vec3(const vec3_t v);
+vec3_t vec3_from_vec4(const vec4_t v);
 
 #endif // VECTOR_H

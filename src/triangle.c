@@ -48,7 +48,8 @@ void fill_flat_bottom_triangle(
     uint32_t colour
 )
 {
-    /*                  x0,y0
+    /*
+     *                  x0,y0
      *                   /\
      *           slope1 /  \ slope2
      *                 /    \
@@ -81,7 +82,8 @@ void fill_flat_top_triangle(
     uint32_t colour
 )
 {
-    /*           x0,y0      x1,y1
+    /*
+     *           x0,y0      x1,y1
      *              ----------
      *               \      /
      *         slope1 \    / slope2
