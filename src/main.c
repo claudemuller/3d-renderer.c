@@ -10,15 +10,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 bool setup(void);
 void process_input(void);
 vec2_t project(const vec3_t point);
 void update(void);
 void render(void);
 void free_resources(void);
-
-float fov_factor = 640;
-float zoom = 5.0;
 
 // Stores the 2D projected points to be drawn
 triangle_t *triangles_to_render = NULL;
@@ -27,6 +28,9 @@ vec3_t camera_pos = { 0, 0, 0 };
 
 bool running = false;
 int prev_frame_time = 0;
+
+float zoom = 5.0;
+mat4_t proj_matrix = { 0 };
 
 int main(int argc, char *argv[])
 {
@@ -76,6 +80,13 @@ bool setup(void)
         fprintf(stderr, "error creating colour buffer texture: %s\n", SDL_GetError());
         return false;
     }
+
+    // Init perspective projection matrix
+    float fov = M_PI / 3.0; // 60° (180/3)
+    float aspect = win_height / (float)win_width;
+    float znear = 0.1;
+    float zfar = 100.0;
+    proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
     load_cube_mesh_data();
     // load_obj("./assets/f22.obj");
@@ -135,17 +146,6 @@ void process_input(void)
     }
 }
 
-// Receives a 3D vector and returns a 2D point.
-vec2_t project(const vec3_t point)
-{
-    return (vec2_t) {
-        // p'x = px / pz
-        .x = (fov_factor * point.x) / point.z,
-        // p'y = py / pz
-        .y = (fov_factor * point.y) / point.z
-    };
-}
-
 void update(void)
 {
     int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - prev_frame_time);
@@ -159,8 +159,8 @@ void update(void)
 
     // Change mesh rotation/scale/translation with matrix
     mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.01;
-    mesh.rotation.z += 0.01;
+    // mesh.rotation.y += 0.01;
+    // mesh.rotation.z += 0.01;
     // mesh.scale.x += 0.002;
     // mesh.scale.y += 0.001;
     // mesh.translation.x += 0.01;
@@ -233,12 +233,20 @@ void update(void)
             }
         }
 
-        vec2_t projected_points[NUM_TRIANGLE_VERTICES];
+        vec4_t projected_points[NUM_TRIANGLE_VERTICES];
+
         for (size_t j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
             // Project current point to a 2D vector to draw
-            projected_points[j] = project(vec3_from_vec4(transformed_vertices[j]));
+            projected_points[j] = mat4_mul_vec4_project(
+                proj_matrix,
+                transformed_vertices[j]
+            );
 
-            // Scale and translate projected point to centre of screen
+            // Scale points into viewport
+            projected_points[j].x *= win_width / 2.0;
+            projected_points[j].y *= win_height / 2.0;
+
+            // Translate projected point to centre of screen
             projected_points[j].x += win_width / 2.0;
             projected_points[j].y += win_height / 2.0;
         }
