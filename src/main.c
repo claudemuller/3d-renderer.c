@@ -192,6 +192,7 @@ void update(void)
             vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 
             // Create a world matrix with scale/rotation/translation matrices
+            // Scale -> rotate -> translate
             mat4_t world_matrix = mat4_identity();
             world_matrix = mat4_mul_mat4(scale_matrix, world_matrix);
             world_matrix = mat4_mul_mat4(rotation_matrix_x, world_matrix);

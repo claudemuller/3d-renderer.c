@@ -1,3 +1,5 @@
+#include "SDL_pixels.h"
+#include "SDL_render.h"
 #include "SDL_ttf.h"
 #include "display.h"
 #include "triangle.h"
@@ -148,10 +150,73 @@ void draw_ui(SDL_Renderer *renderer)
         fprintf(stderr, "error loading font: %s\n", SDL_GetError());
     }
 
-    char *ui = "<1> - wire\n<2> - wire vertex\n<3> - fill triangle\n<4> - fill triangle wire\n<c> - cull backface\n<d> - cull none\n<mouse-wheel> zoom in/out\n<esc> - quit";
+    char *ui[8] = {
+        "<1> - wire",
+        "<2> - wire vertex",
+        "<3> - fill triangle",
+        "<4> - fill triangle wire",
+        "<c> - cull backface",
+        "<d> - cull none",
+        "<mouse-wheel> zoom in/out",
+        "<esc> - quit"
+    };
     SDL_Color white = { 62, 81, 100, 255 };
+    SDL_Color red = { 159, 226, 191, 255 };
 
-    SDL_Surface *msg_surface = TTF_RenderText_Solid_Wrapped(font, ui, white, 0);
+    // TODO: make this better 😒
+    if (render_method == RENDER_WIRE) {
+        draw_text(renderer, font, ui[0], 15, 15 * 0 + 10, red);
+    } else {
+        draw_text(renderer, font, ui[0], 15, 15 * 0 + 10, white);
+    }
+
+    if (render_method == RENDER_WIRE_VERTEX) {
+        draw_text(renderer, font, ui[1], 15, 15 * 1 + 10, red);
+    } else {
+        draw_text(renderer, font, ui[1], 15, 15 * 1 + 10, white);
+    }
+
+    if (render_method == RENDER_FILL_TRIANGLE) {
+        draw_text(renderer, font, ui[2], 15, 15 * 2 + 10, red);
+    } else {
+        draw_text(renderer, font, ui[2], 15, 15 * 2 + 10, white);
+    }
+
+    if (render_method == RENDER_FILL_TRIANGLE_WIRE) {
+        draw_text(renderer, font, ui[3], 15, 15 * 3 + 10, red);
+    } else {
+        draw_text(renderer, font, ui[3], 15, 15 * 3 + 10, white);
+    }
+
+    if (cull_method == CULL_BACKFACE) {
+        draw_text(renderer, font, ui[4], 15, 15 * 4 + 10, red);
+    } else {
+        draw_text(renderer, font, ui[4], 15, 15 * 4 + 10, white);
+    }
+
+    if (cull_method == CULL_NONE) {
+        draw_text(renderer, font, ui[5], 15, 15 * 5 + 10, red);
+    } else {
+        draw_text(renderer, font, ui[5], 15, 15 * 5 + 10, white);
+    }
+
+    for (size_t i = 6; i < 8; i++) {
+        draw_text(renderer, font, ui[i], 15, 15 * i + 10, white);
+    }
+
+    TTF_CloseFont(font);
+}
+
+void draw_text(
+    SDL_Renderer *renderer,
+    TTF_Font *font,
+    const char *text,
+    const int x,
+    const int y,
+    SDL_Color colour
+)
+{
+    SDL_Surface *msg_surface = TTF_RenderText_Solid(font, text, colour);
     if (!msg_surface) {
         fprintf(stderr, "error creating surface: %s\n", SDL_GetError());
     }
@@ -165,14 +230,13 @@ void draw_ui(SDL_Renderer *renderer)
     int w = 0, h = 0;
     SDL_QueryTexture(msg_tex, NULL, NULL, &w, &h);
     SDL_Rect msg_rect;
-    msg_rect.x = 15;
-    msg_rect.y = 10;
+    msg_rect.x = x;
+    msg_rect.y = y;
     msg_rect.w = w;
     msg_rect.h = h;
 
     SDL_RenderCopy(renderer, msg_tex, NULL, &msg_rect);
     SDL_DestroyTexture(msg_tex);
-    TTF_CloseFont(font);
 }
 
 void cleanup(void)

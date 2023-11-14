@@ -2,6 +2,7 @@
 #define DISPLAY_H
 
 #include "SDL.h"
+#include "SDL_ttf.h"
 #include "triangle.h"
 #include "vector.h"
 #include <stdbool.h>
@@ -47,6 +48,14 @@ void draw_triangle(
 void draw_rect(const int x, const int y, const int w, const int h, const uint32_t colour);
 void draw_grid(void);
 void draw_ui(SDL_Renderer *renderer);
+void draw_text(
+    SDL_Renderer *renderer,
+    TTF_Font *font,
+    const char *text,
+    const int x,
+    const int y,
+    SDL_Color colour
+);
 
 void cleanup(void);
 
