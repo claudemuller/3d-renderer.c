@@ -29,7 +29,7 @@ vec3_t camera_pos = { 0, 0, 0 };
 bool running = false;
 int prev_frame_time = 0;
 
-float zoom = 5.0;
+float zoom = -5.0;
 mat4_t proj_matrix = { 0 };
 
 int main(int argc, char *argv[])
@@ -88,8 +88,8 @@ bool setup(void)
     float zfar = 100.0;
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
-    load_cube_mesh_data();
-    // load_obj("./assets/f22.obj");
+    // load_cube_mesh_data();
+    load_obj("./assets/f22.obj");
 
     return true;
 }
