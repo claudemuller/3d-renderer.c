@@ -243,6 +243,7 @@ void update(void)
             }
         }
 
+        // Project into screen space
         vec4_t projected_points[NUM_TRIANGLE_VERTICES];
 
         for (size_t j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
@@ -255,6 +256,9 @@ void update(void)
             // Scale points into viewport
             projected_points[j].x *= win_width / 2.0;
             projected_points[j].y *= win_height / 2.0;
+
+            // Invert y values to account for invert y growth between model and screen draw
+            projected_points[j].y *= -1;
 
             // Translate projected point to centre of screen
             projected_points[j].x += win_width / 2.0;
