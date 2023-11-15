@@ -1,6 +1,7 @@
 #include "SDL.h"
 #include "array.h"
 #include "display.h"
+#include "light.h"
 #include "matrix.h"
 #include "mesh.h"
 #include "triangle.h"
@@ -29,7 +30,7 @@ vec3_t camera_pos = { 0, 0, 0 };
 bool running = false;
 int prev_frame_time = 0;
 
-float zoom = -5.0;
+float zoom = 5.0;
 mat4_t proj_matrix = { 0 };
 
 int main(int argc, char *argv[])
@@ -112,10 +113,12 @@ void process_input(void)
 
         case SDLK_1: {
             render_method = RENDER_WIRE;
+            lighting = false;
         } break;
 
         case SDLK_2: {
             render_method = RENDER_WIRE_VERTEX;
+            lighting = false;
         } break;
 
         case SDLK_3: {
@@ -124,6 +127,11 @@ void process_input(void)
 
         case SDLK_4: {
             render_method = RENDER_FILL_TRIANGLE_WIRE;
+        } break;
+
+        case SDLK_5: {
+            render_method = RENDER_FILL_TRIANGLE;
+            lighting = true;
         } break;
 
         case SDLK_c: {
@@ -158,7 +166,9 @@ void update(void)
     triangles_to_render = NULL;
 
     // Change mesh rotation/scale/translation with matrix
-    mesh.rotation.x += 0.01;
+    mesh.rotation.x += 0.005;
+    // mesh.rotation.x = 10;
+    // mesh.rotation.y = 10;
     // mesh.rotation.y += 0.01;
     // mesh.rotation.z += 0.01;
     // mesh.scale.x += 0.002;
@@ -206,27 +216,27 @@ void update(void)
         }
 
         // Check which faces need to be culled
+        vec3_t vec_a = vec3_from_vec4(transformed_vertices[0]); /*     A     */
+        vec3_t vec_b = vec3_from_vec4(transformed_vertices[1]); /*   /   \   */
+        vec3_t vec_c = vec3_from_vec4(transformed_vertices[2]); /*  C --- B  */
+        vec3_t vec_ab = vec3_sub(vec_b, vec_a);
+        vec3_normalise(&vec_ab);
+        vec3_t vec_ac = vec3_sub(vec_c, vec_a);
+        vec3_normalise(&vec_ac);
+
+        // Compute face normal by getting the cross product to find the perpendicular
+        vec3_t normal = vec3_cross(vec_ab, vec_ac);
+
+        // Normalise the face normal vector i.e. turn it into a unit vector
+        vec3_normalise(&normal);
+
+        // Find vector between the triangle and the camera
+        vec3_t camera_ray = vec3_sub(camera_pos, vec_a);
+
+        // Calculate the dot product between the camera and triangle normal
+        float dot_normal_cam = vec3_dot(normal, camera_ray);
+
         if (cull_method == CULL_BACKFACE) {
-            vec3_t vec_a = vec3_from_vec4(transformed_vertices[0]); /*     A     */
-            vec3_t vec_b = vec3_from_vec4(transformed_vertices[1]); /*   /   \   */
-            vec3_t vec_c = vec3_from_vec4(transformed_vertices[2]); /*  C --- B  */
-            vec3_t vec_ab = vec3_sub(vec_b, vec_a);
-            vec3_normalise(&vec_ab);
-            vec3_t vec_ac = vec3_sub(vec_c, vec_a);
-            vec3_normalise(&vec_ac);
-
-            // Compute face normal by getting the cross product to find the perpendicular
-            vec3_t normal = vec3_cross(vec_ab, vec_ac);
-
-            // Normalise the face normal vector i.e. turn it into a unit vector
-            vec3_normalise(&normal);
-
-            // Find vector between the triangle and the camera
-            vec3_t camera_ray = vec3_sub(camera_pos, vec_a);
-
-            // Calculate the dot product between the camera and triangle normal
-            float dot_normal_cam = vec3_dot(normal, camera_ray);
-
             // Cull if face is facing away from camera
             if (dot_normal_cam < 0) {
                 continue;
@@ -255,6 +265,12 @@ void update(void)
         float avg_depth_z = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z)
             / NUM_TRIANGLE_VERTICES;
 
+        // Lighting
+        if (lighting) {
+            float light_intensity_factor = -vec3_dot(normal, light.direction);
+            mesh_face.colour = light_apply_intensity(mesh_face.colour, light_intensity_factor);
+        }
+
         triangle_t projected_triangle = {
             .points = {
                 { projected_points[0].x, projected_points[0].y },
@@ -266,16 +282,16 @@ void update(void)
         };
 
         array_push(triangles_to_render, projected_triangle);
-    }
 
-    // Sort faces based on depth with bubble sort
-    size_t num_triangles = array_length(triangles_to_render);
-    for (size_t i = 0; i < num_triangles; i++) {
-        for (size_t j = 0; j < num_triangles; j++) {
-            if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) {
-                triangle_t temp = triangles_to_render[i];
-                triangles_to_render[i] = triangles_to_render[j];
-                triangles_to_render[j] = temp;
+        // Sort faces based on depth with bubble sort
+        size_t num_triangles = array_length(triangles_to_render);
+        for (size_t i = 0; i < num_triangles; i++) {
+            for (size_t j = 0; j < num_triangles; j++) {
+                if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) {
+                    triangle_t temp = triangles_to_render[i];
+                    triangles_to_render[i] = triangles_to_render[j];
+                    triangles_to_render[j] = temp;
+                }
             }
         }
     }

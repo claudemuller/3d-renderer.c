@@ -2,6 +2,7 @@
 #include "SDL_render.h"
 #include "SDL_ttf.h"
 #include "display.h"
+#include "light.h"
 #include "triangle.h"
 
 enum cull_method cull_method;
@@ -150,57 +151,64 @@ void draw_ui(SDL_Renderer *renderer)
         fprintf(stderr, "error loading font: %s\n", SDL_GetError());
     }
 
-    char *ui[8] = {
+    char *ui[9] = {
         "<1> - wire",
         "<2> - wire vertex",
         "<3> - fill triangle",
         "<4> - fill triangle wire",
+        "<5> - turn on lighting",
         "<c> - cull backface",
         "<d> - cull none",
         "<mouse-wheel> zoom in/out",
         "<esc> - quit"
     };
     SDL_Color white = { 62, 81, 100, 255 };
-    SDL_Color red = { 159, 226, 191, 255 };
+    SDL_Color green = { 159, 226, 191, 255 };
 
     // TODO: make this better 😒
     if (render_method == RENDER_WIRE) {
-        draw_text(renderer, font, ui[0], 15, 15 * 0 + 10, red);
+        draw_text(renderer, font, ui[0], 15, 15 * 0 + 10, green);
     } else {
         draw_text(renderer, font, ui[0], 15, 15 * 0 + 10, white);
     }
 
     if (render_method == RENDER_WIRE_VERTEX) {
-        draw_text(renderer, font, ui[1], 15, 15 * 1 + 10, red);
+        draw_text(renderer, font, ui[1], 15, 15 * 1 + 10, green);
     } else {
         draw_text(renderer, font, ui[1], 15, 15 * 1 + 10, white);
     }
 
     if (render_method == RENDER_FILL_TRIANGLE) {
-        draw_text(renderer, font, ui[2], 15, 15 * 2 + 10, red);
+        draw_text(renderer, font, ui[2], 15, 15 * 2 + 10, green);
     } else {
         draw_text(renderer, font, ui[2], 15, 15 * 2 + 10, white);
     }
 
     if (render_method == RENDER_FILL_TRIANGLE_WIRE) {
-        draw_text(renderer, font, ui[3], 15, 15 * 3 + 10, red);
+        draw_text(renderer, font, ui[3], 15, 15 * 3 + 10, green);
     } else {
         draw_text(renderer, font, ui[3], 15, 15 * 3 + 10, white);
     }
 
-    if (cull_method == CULL_BACKFACE) {
-        draw_text(renderer, font, ui[4], 15, 15 * 4 + 10, red);
+    if (lighting) {
+        draw_text(renderer, font, ui[4], 15, 15 * 4 + 10, green);
     } else {
         draw_text(renderer, font, ui[4], 15, 15 * 4 + 10, white);
     }
 
-    if (cull_method == CULL_NONE) {
-        draw_text(renderer, font, ui[5], 15, 15 * 5 + 10, red);
+    if (cull_method == CULL_BACKFACE) {
+        draw_text(renderer, font, ui[5], 15, 15 * 5 + 10, green);
     } else {
         draw_text(renderer, font, ui[5], 15, 15 * 5 + 10, white);
     }
 
-    for (size_t i = 6; i < 8; i++) {
+    if (cull_method == CULL_NONE) {
+        draw_text(renderer, font, ui[6], 15, 15 * 6 + 10, green);
+    } else {
+        draw_text(renderer, font, ui[6], 15, 15 * 6 + 10, white);
+    }
+
+    for (size_t i = 7; i < 9; i++) {
         draw_text(renderer, font, ui[i], 15, 15 * i + 10, white);
     }
 
