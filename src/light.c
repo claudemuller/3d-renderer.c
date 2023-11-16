@@ -4,12 +4,11 @@
 bool lighting = false;
 
 light_t light = {
-    .direction = { 0, 1, 1 }
+    .direction = { 0, 0, 1 }
 };
 
 uint32_t light_apply_intensity(const uint32_t col, float factor)
 {
-    factor = fabs(factor);
     if (factor < 0) {
         factor = 0;
     }

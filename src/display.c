@@ -8,6 +8,9 @@
 enum cull_method cull_method;
 enum render_method render_method;
 
+float rot = 0.01;
+bool is_paused = false;
+
 int win_width = 800;
 int win_height = 600;
 
@@ -143,6 +146,8 @@ void draw_grid(void)
     }
 }
 
+#define UI_LEN 10
+
 void draw_ui(SDL_Renderer *renderer)
 {
     int font_size = 12;
@@ -151,7 +156,7 @@ void draw_ui(SDL_Renderer *renderer)
         fprintf(stderr, "error loading font: %s\n", SDL_GetError());
     }
 
-    char *ui[9] = {
+    char *ui[UI_LEN] = {
         "<1> - wire",
         "<2> - wire vertex",
         "<3> - fill triangle",
@@ -159,11 +164,16 @@ void draw_ui(SDL_Renderer *renderer)
         "<5> - turn on lighting",
         "<c> - cull backface",
         "<d> - cull none",
+        "<p> - pause",
         "<mouse-wheel> zoom in/out",
         "<esc> - quit"
     };
     SDL_Color white = { 62, 81, 100, 255 };
     SDL_Color green = { 159, 226, 191, 255 };
+
+    char r[20] = { 0 };
+    sprintf(r, "rot:%f", rot);
+    draw_text(renderer, font, r, win_width - 100, 15 * 0 + 10, green);
 
     // TODO: make this better 😒
     if (render_method == RENDER_WIRE) {
@@ -208,7 +218,13 @@ void draw_ui(SDL_Renderer *renderer)
         draw_text(renderer, font, ui[6], 15, 15 * 6 + 10, white);
     }
 
-    for (size_t i = 7; i < 9; i++) {
+    if (is_paused) {
+        draw_text(renderer, font, ui[7], 15, 15 * 7 + 10, green);
+    } else {
+        draw_text(renderer, font, ui[7], 15, 15 * 7 + 10, white);
+    }
+
+    for (size_t i = 8; i < UI_LEN; i++) {
         draw_text(renderer, font, ui[i], 15, 15 * i + 10, white);
     }
 

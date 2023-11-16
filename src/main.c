@@ -61,8 +61,9 @@ int main(int argc, char *argv[])
 
 bool setup(void)
 {
-    render_method = RENDER_WIRE;
+    render_method = RENDER_FILL_TRIANGLE;
     cull_method = CULL_BACKFACE;
+    lighting = true;
 
     colour_buf = (uint32_t *)malloc(sizeof(uint32_t) * win_width * win_height);
     if (!colour_buf) {
@@ -141,6 +142,11 @@ void process_input(void)
         case SDLK_d: {
             cull_method = CULL_NONE;
         } break;
+
+        case SDLK_p: {
+            rot = rot == 0 ? 0.01 : 0;
+            is_paused = !is_paused;
+        } break;
         }
     } break;
 
@@ -162,30 +168,27 @@ void update(void)
     }
     prev_frame_time = SDL_GetTicks();
 
-    // Initialise triangles to render
+    // Initialize triangles to render
     triangles_to_render = NULL;
 
-    // Change mesh rotation/scale/translation with matrix
-    mesh.rotation.x += 0.005;
-    // mesh.rotation.x = 10;
-    // mesh.rotation.y = 10;
-    // mesh.rotation.y += 0.01;
-    // mesh.rotation.z += 0.01;
-    // mesh.scale.x += 0.002;
-    // mesh.scale.y += 0.001;
-    // mesh.translation.x += 0.01;
-    mesh.translation.z = zoom;
+    // Change the mesh scale/rotation/translation with matrix
+    mesh.rotation.x += 0.005; // rot
+    // mesh.rotation.y += 0.003;
+    // mesh.rotation.z += 0.004;
+    mesh.translation.z = 5.0; // zoom
 
-    // Create rotation/scale/translation matrix to scale mesh
+    // Create scale/rotation/translation matrices
     mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
     mat4_t translation_matrix = mat4_make_translation(
-        mesh.translation.x, mesh.translation.y, mesh.translation.z
+        mesh.translation.x,
+        mesh.translation.y,
+        mesh.translation.z
     );
     mat4_t rotation_matrix_x = mat4_make_rotation_x(mesh.rotation.x);
     mat4_t rotation_matrix_y = mat4_make_rotation_y(mesh.rotation.y);
     mat4_t rotation_matrix_z = mat4_make_rotation_z(mesh.rotation.z);
 
-    size_t num_faces = array_length(mesh.faces);
+    size_t num_faces = (size_t)array_length(mesh.faces);
     for (size_t i = 0; i < num_faces; i++) {
         face_t mesh_face = mesh.faces[i];
 
@@ -198,16 +201,17 @@ void update(void)
 
         vec4_t transformed_vertices[NUM_TRIANGLE_VERTICES];
 
-        for (size_t j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
+        for (int j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
             vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 
             // Create a world matrix with scale/rotation/translation matrices
-            // Scale -> rotate -> translate
             mat4_t world_matrix = mat4_identity();
+
+            // Scale -> rotate -> translate
             world_matrix = mat4_mul_mat4(scale_matrix, world_matrix);
-            world_matrix = mat4_mul_mat4(rotation_matrix_x, world_matrix);
-            world_matrix = mat4_mul_mat4(rotation_matrix_y, world_matrix);
             world_matrix = mat4_mul_mat4(rotation_matrix_z, world_matrix);
+            world_matrix = mat4_mul_mat4(rotation_matrix_y, world_matrix);
+            world_matrix = mat4_mul_mat4(rotation_matrix_x, world_matrix);
             world_matrix = mat4_mul_mat4(translation_matrix, world_matrix);
 
             transformed_vertex = mat4_mul_vec4(world_matrix, transformed_vertex);
@@ -216,15 +220,18 @@ void update(void)
         }
 
         // Check which faces need to be culled
-        vec3_t vec_a = vec3_from_vec4(transformed_vertices[0]); /*     A     */
-        vec3_t vec_b = vec3_from_vec4(transformed_vertices[1]); /*   /   \   */
-        vec3_t vec_c = vec3_from_vec4(transformed_vertices[2]); /*  C --- B  */
+        vec3_t vec_a = vec3_from_vec4(transformed_vertices[0]); /*   A   */
+        vec3_t vec_b = vec3_from_vec4(transformed_vertices[1]); /*  / \  */
+        vec3_t vec_c = vec3_from_vec4(transformed_vertices[2]); /* C---B */
+
+        // Do vec subtraction of B-A and C-A
         vec3_t vec_ab = vec3_sub(vec_b, vec_a);
-        vec3_normalise(&vec_ab);
         vec3_t vec_ac = vec3_sub(vec_c, vec_a);
+
+        vec3_normalise(&vec_ab);
         vec3_normalise(&vec_ac);
 
-        // Compute face normal by getting the cross product to find the perpendicular
+        // Find the vector between vertex A in the triangle and the camera origin
         vec3_t normal = vec3_cross(vec_ab, vec_ac);
 
         // Normalise the face normal vector i.e. turn it into a unit vector
@@ -234,11 +241,11 @@ void update(void)
         vec3_t camera_ray = vec3_sub(camera_pos, vec_a);
 
         // Calculate the dot product between the camera and triangle normal
-        float dot_normal_cam = vec3_dot(normal, camera_ray);
+        float dot_normal_camera = vec3_dot(normal, camera_ray);
 
         if (cull_method == CULL_BACKFACE) {
             // Cull if face is facing away from camera
-            if (dot_normal_cam < 0) {
+            if (dot_normal_camera < 0) {
                 continue;
             }
         }
@@ -246,14 +253,12 @@ void update(void)
         // Project into screen space
         vec4_t projected_points[NUM_TRIANGLE_VERTICES];
 
-        for (size_t j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
+        // Loop all three vertices to perform projection
+        for (int j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
             // Project current point to a 2D vector to draw
-            projected_points[j] = mat4_mul_vec4_project(
-                proj_matrix,
-                transformed_vertices[j]
-            );
+            projected_points[j] = mat4_mul_vec4_project(proj_matrix, transformed_vertices[j]);
 
-            // Scale points into viewport
+            // Scale into the viewport
             projected_points[j].x *= win_width / 2.0;
             projected_points[j].y *= win_height / 2.0;
 
@@ -266,11 +271,11 @@ void update(void)
         }
 
         // Average depth of face based off avg z of translated vertices
-        float avg_depth_z = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z)
+        float avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z)
             / NUM_TRIANGLE_VERTICES;
 
-        // Lighting
         if (lighting) {
+            // Calculate light intensity based on face normal relation to light direction
             float light_intensity_factor = -vec3_dot(normal, light.direction);
             mesh_face.colour = light_apply_intensity(mesh_face.colour, light_intensity_factor);
         }
@@ -282,20 +287,20 @@ void update(void)
                 { projected_points[2].x, projected_points[2].y },
             },
             .colour = mesh_face.colour,
-            .avg_depth = avg_depth_z
+            .avg_depth = avg_depth
         };
 
         array_push(triangles_to_render, projected_triangle);
+    }
 
-        // Sort faces based on depth with bubble sort
-        size_t num_triangles = array_length(triangles_to_render);
-        for (size_t i = 0; i < num_triangles; i++) {
-            for (size_t j = 0; j < num_triangles; j++) {
-                if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) {
-                    triangle_t temp = triangles_to_render[i];
-                    triangles_to_render[i] = triangles_to_render[j];
-                    triangles_to_render[j] = temp;
-                }
+    // Sort faces based on depth with bubble sort
+    size_t num_triangles = (size_t)array_length(triangles_to_render);
+    for (size_t i = 0; i < num_triangles; i++) {
+        for (size_t j = i; j < num_triangles; j++) {
+            if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) {
+                triangle_t temp = triangles_to_render[i];
+                triangles_to_render[i] = triangles_to_render[j];
+                triangles_to_render[j] = temp;
             }
         }
     }
@@ -316,6 +321,14 @@ void render(void)
                 triangle.points[2].x, triangle.points[2].y,
                 triangle.colour
             );
+
+            SDL_Color red = { 255, 0, 0, 255 };
+            int font_size = 12;
+            TTF_Font *font = TTF_OpenFont("./assets/fonts/FiraCode-Regular.ttf", font_size);
+            char idx[5];
+            sprintf(idx, "%d", (int)triangle.idx);
+            draw_text(renderer, font, idx, win_width - 100, 15 * 0 + 10, red);
+            TTF_CloseFont(font);
         }
 
         if (

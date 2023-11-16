@@ -11,6 +11,9 @@
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
 
+extern float rot;
+extern bool is_paused;
+
 enum cull_method {
     CULL_NONE,
     CULL_BACKFACE

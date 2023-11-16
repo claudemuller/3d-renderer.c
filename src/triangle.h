@@ -2,6 +2,7 @@
 #define TRIANGLE_H
 
 #include "vector.h"
+#include <stddef.h>
 #include <stdint.h>
 
 typedef struct {
@@ -15,8 +16,9 @@ typedef struct {
 
 typedef struct {
 	vec2_t points[NUM_TRIANGLE_VERTICES];
-	uint32_t colour;
 	float avg_depth;
+	uint32_t colour;
+	size_t idx;
 } triangle_t;
 
 void draw_fill_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t colour);

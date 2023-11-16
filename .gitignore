@@ -6,3 +6,4 @@ memcheck.out*
 bin
 assets/kharkovchanka.obj
 assets/kharkovchanka.mtl
+.gdb_history
