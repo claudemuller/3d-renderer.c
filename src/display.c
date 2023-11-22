@@ -146,7 +146,7 @@ void draw_grid(void)
     }
 }
 
-#define UI_LEN 10
+#define UI_LEN 12
 
 void draw_ui(SDL_Renderer *renderer)
 {
@@ -162,6 +162,8 @@ void draw_ui(SDL_Renderer *renderer)
         "<3> - fill triangle",
         "<4> - fill triangle wire",
         "<5> - turn on lighting",
+        "<6> - textured",
+        "<7> - textured wire",
         "<c> - cull backface",
         "<d> - cull none",
         "<p> - pause",
@@ -206,25 +208,37 @@ void draw_ui(SDL_Renderer *renderer)
         draw_text(renderer, font, ui[4], 15, 15 * 4 + 10, white);
     }
 
-    if (cull_method == CULL_BACKFACE) {
+    if (render_method == RENDER_TEXTURED) {
         draw_text(renderer, font, ui[5], 15, 15 * 5 + 10, green);
     } else {
         draw_text(renderer, font, ui[5], 15, 15 * 5 + 10, white);
     }
 
-    if (cull_method == CULL_NONE) {
+    if (render_method == RENDER_TEXTURED_WIRE) {
         draw_text(renderer, font, ui[6], 15, 15 * 6 + 10, green);
     } else {
         draw_text(renderer, font, ui[6], 15, 15 * 6 + 10, white);
     }
 
-    if (is_paused) {
+    if (cull_method == CULL_BACKFACE) {
         draw_text(renderer, font, ui[7], 15, 15 * 7 + 10, green);
     } else {
         draw_text(renderer, font, ui[7], 15, 15 * 7 + 10, white);
     }
 
-    for (size_t i = 8; i < UI_LEN; i++) {
+    if (cull_method == CULL_NONE) {
+        draw_text(renderer, font, ui[8], 15, 15 * 8 + 10, green);
+    } else {
+        draw_text(renderer, font, ui[8], 15, 15 * 8 + 10, white);
+    }
+
+    if (is_paused) {
+        draw_text(renderer, font, ui[9], 15, 15 * 9 + 10, green);
+    } else {
+        draw_text(renderer, font, ui[9], 15, 15 * 9 + 10, white);
+    }
+
+    for (size_t i = 10; i < UI_LEN; i++) {
         draw_text(renderer, font, ui[i], 15, 15 * i + 10, white);
     }
 

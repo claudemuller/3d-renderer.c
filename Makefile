@@ -34,6 +34,9 @@ debug: debug-build
 debug-build: bin-dir
 	$(CC) $(CFLAGS) -g $(LIBS) $(SRC) -o $(BIN) $(LDFLAGS)
 
+run-windowed: build
+	@$(BIN) true
+
 run: build
 	@$(BIN) $(ARGS)
 
