@@ -160,7 +160,7 @@ void process_input(void)
         } break;
 
         case SDLK_p: {
-            rot = rot == 0 ? 0.01 : 0;
+            rot = rot == 0 ? 0.005 : 0;
             is_paused = !is_paused;
         } break;
         }
@@ -188,7 +188,7 @@ void update(void)
     triangles_to_render = NULL;
 
     // Change the mesh scale/rotation/translation with matrix
-    mesh.rotation.x += 0.005; // rot
+    mesh.rotation.x += rot;
     // mesh.rotation.y += 0.003;
     // mesh.rotation.z += 0.004;
     mesh.translation.z = 5.0; // zoom

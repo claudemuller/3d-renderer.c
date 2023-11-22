@@ -84,14 +84,7 @@ void draw_textured_triangle(
         SWAP(&v0, &v1);
     }
 
-    /*
-     *                  x0,y0
-     *                   /\
-     *           slope1 /  \ slope2
-     *                 /    \
-     *                /______\
-     *             x1,y1    x2,y2
-     */
+    // Render the top of the triangle i.e. the flat bottomed triangle
     // Inverse slope because we need to calculate the y increment
     float inv_slope1 = 0;
     if (y1 - y0 != 0) { // Guard against div by zero
@@ -105,6 +98,33 @@ void draw_textured_triangle(
 
     if (y1 - y0 != 0) {
         for (int y = y0; y <= y1; y++) {
+            int xstart = x1 + (y - y1) * inv_slope1;
+            int xend = x0 + (y - y0) * inv_slope2;
+
+            if (xend < xstart) {
+                SWAP(&xstart, &xend);
+            }
+
+            for (int x = xstart; x < xend; x++) {
+                draw_pixel(x, y, 0xFFFF00FF);
+            }
+        }
+    }
+
+    // Render the bottom of the triangle i.e. the flat topped triangle
+    // Inverse slope because we need to calculate the y increment
+    inv_slope1 = 0;
+    if (y2 - y1 != 0) { // Guard against div by zero
+        inv_slope1 = (float)(x2 - x1) / abs(y2 - y1);
+    }
+
+    inv_slope2 = 0;
+    if (y2 - y0 != 0) { // Guard against div by zero
+        inv_slope2 = (float)(x2 - x0) / abs(y2 - y0);
+    }
+
+    if (y2 - y1 != 0) {
+        for (int y = y1; y <= y2; y++) {
             int xstart = x1 + (y - y1) * inv_slope1;
             int xend = x0 + (y - y0) * inv_slope2;
 
