@@ -167,6 +167,11 @@ void draw_textured_triangle(
         SWAP(&v0, &v1);
     }
 
+    // Flip V component to account for inverted UV coords
+    v0 = 1.0 - v0;
+    v1 = 1.0 - v1;
+    v2 = 1.0 - v2;
+
     const vec4_t point_a = { x0, y0, z0, w0 };
     const vec4_t point_b = { x1, y1, z1, w1 };
     const vec4_t point_c = { x2, y2, z2, w2 };

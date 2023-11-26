@@ -92,7 +92,8 @@ bool setup(void)
     float zfar = 100.0;
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
-    load_cube_mesh_data();
+    // load_cube_mesh_data();
+    load_obj("./assets/cube.obj");
     // load_obj("./assets/f22.obj");
 
     load_png_texture_data("./assets/cube.png");
@@ -208,9 +209,9 @@ void update(void)
 
         // Triangle face vertices
         vec3_t face_vertices[NUM_TRIANGLE_VERTICES] = {
-            mesh.vertices[mesh_face.a - 1],
-            mesh.vertices[mesh_face.b - 1],
-            mesh.vertices[mesh_face.c - 1],
+            mesh.vertices[mesh_face.a],
+            mesh.vertices[mesh_face.b],
+            mesh.vertices[mesh_face.c],
         };
 
         vec4_t transformed_vertices[NUM_TRIANGLE_VERTICES];
@@ -386,7 +387,8 @@ void render(void)
 
 void free_resources(void)
 {
+    free(colour_buf);
+    upng_free(png_texture);
     array_free(mesh.faces);
     array_free(mesh.vertices);
-    free(colour_buf);
 }
