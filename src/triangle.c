@@ -101,7 +101,7 @@ void draw_texel(
     const int x, const int y,
     const uint32_t *texture,
     const vec4_t point_a, const vec4_t point_b, const vec4_t point_c,
-    const float u0, const float v0, const float u1, const float v1, const float u2, const float v2
+    const tex2_t a_uv, const tex2_t b_uv, const tex2_t c_uv
 )
 {
     const vec2_t p = { x, y };
@@ -114,10 +114,11 @@ void draw_texel(
     const float gamma = weights.z;
 
     // Interpolate U/w and V/w values using barycentric weights and a factor of 1/w
-    float interpolated_u = (u0 / point_a.w) * alpha + (u1 / point_b.w) * beta + (u2 / point_c.w) * gamma;
-    float interpolated_v = (v0 / point_a.w) * alpha + (v1 / point_b.w) * beta + (v2 / point_c.w) * gamma;
+    float interpolated_u = (a_uv.u / point_a.w) * alpha + (b_uv.u / point_b.w) * beta + (c_uv.u / point_c.w) * gamma;
+    float interpolated_v = (a_uv.v / point_a.w) * alpha + (b_uv.v / point_b.w) * beta + (c_uv.v / point_c.w) * gamma;
 
     // Interpolate the value of 1/w for current pixel
+    // TODO: pull out this reciprocal calc out of this func
     float interpolated_reciprocal_w = (1 / point_a.w) * alpha + (1 / point_b.w) * beta + (1 / point_c.w) * gamma;
 
     // Divide the values back by 1/w to "reverse" the reciprocal calulation
@@ -169,6 +170,9 @@ void draw_textured_triangle(
     const vec4_t point_a = { x0, y0, z0, w0 };
     const vec4_t point_b = { x1, y1, z1, w1 };
     const vec4_t point_c = { x2, y2, z2, w2 };
+    const tex2_t a_uv = { u0, v0 };
+    const tex2_t b_uv = { u1, v1 };
+    const tex2_t c_uv = { u2, v2 };
 
     // Render the top of the triangle i.e. the flat bottomed triangle
     // Inverse slope because we need to calculate the y increment
@@ -192,7 +196,7 @@ void draw_textured_triangle(
             }
 
             for (int x = xstart; x < xend; x++) {
-                draw_texel(x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2, v2);
+                draw_texel(x, y, texture, point_a, point_b, point_c, a_uv, b_uv, c_uv);
             }
         }
     }
@@ -219,7 +223,7 @@ void draw_textured_triangle(
             }
 
             for (int x = xstart; x < xend; x++) {
-                draw_texel(x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2, v2);
+                draw_texel(x, y, texture, point_a, point_b, point_c, a_uv, b_uv, c_uv);
             }
         }
     }
