@@ -94,7 +94,6 @@ bool setup(void)
 
     // load_cube_mesh_data();
     load_obj("./assets/f22.obj");
-    // load_obj("./assets/f22.obj");
 
     load_png_texture_data("./assets/f22.png");
 
@@ -187,8 +186,8 @@ void update(void)
     triangles_to_render = NULL;
 
     // Change the mesh scale/rotation/translation with matrix
-    mesh.rotation.x += rot;
-    // mesh.rotation.y += rot;
+    // mesh.rotation.x += rot;
+    mesh.rotation.y += rot;
     // mesh.rotation.z += rot;
     mesh.translation.z = zoom;
 
