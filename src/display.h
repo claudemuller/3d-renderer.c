@@ -37,10 +37,12 @@ extern SDL_Window *window;
 extern SDL_Renderer *renderer;
 
 extern uint32_t *colour_buf;
+extern float *z_buf;
 extern SDL_Texture *colour_buf_tex;
 
 bool init_win(const bool debug);
 void clear_colour_buf(const uint32_t colour);
+void clear_z_buf(void);
 void render_colour_buf(void);
 void draw_pixel(const int x, const int y, const uint32_t colour);
 void draw_line(const int x0, const int y0, const int x1, const int y1, const uint32_t colour);

@@ -73,6 +73,12 @@ bool setup(void)
         return false;
     }
 
+    z_buf = (float *)malloc(sizeof(float) * win_width * win_height);
+    if (!z_buf) {
+        fprintf(stderr, "error allocating z buffer\n");
+        return false;
+    }
+
     colour_buf_tex = SDL_CreateTexture(
         renderer,
         SDL_PIXELFORMAT_RGBA32,
@@ -186,8 +192,8 @@ void update(void)
     triangles_to_render = NULL;
 
     // Change the mesh scale/rotation/translation with matrix
-    // mesh.rotation.x += rot;
-    mesh.rotation.y += rot;
+    mesh.rotation.x += rot;
+    // mesh.rotation.y += rot;
     // mesh.rotation.z += rot;
     mesh.translation.z = zoom;
 
@@ -378,6 +384,7 @@ void render(void)
 
     render_colour_buf();
     clear_colour_buf(0xFF000000);
+    clear_z_buf();
 
     draw_ui(renderer);
 
@@ -387,6 +394,7 @@ void render(void)
 void free_resources(void)
 {
     free(colour_buf);
+    free(z_buf);
     upng_free(png_texture);
     array_free(mesh.faces);
     array_free(mesh.vertices);

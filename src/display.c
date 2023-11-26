@@ -19,6 +19,7 @@ SDL_Renderer *renderer = NULL;
 
 uint32_t *colour_buf = NULL;
 SDL_Texture *colour_buf_tex = NULL;
+float *z_buf = NULL;
 
 bool init_win(const bool debug)
 {
@@ -68,6 +69,15 @@ void clear_colour_buf(const uint32_t colour)
     for (size_t y = 0; y < (size_t)win_height; y++) {
         for (size_t x = 0; x < (size_t)win_width; x++) {
             colour_buf[(win_width * y) + x] = colour;
+        }
+    }
+}
+
+void clear_z_buf(void)
+{
+    for (size_t y = 0; y < (size_t)win_height; y++) {
+        for (size_t x = 0; x < (size_t)win_width; x++) {
+            z_buf[(win_width * y) + x] = 1.0;
         }
     }
 }
@@ -173,9 +183,9 @@ void draw_ui(SDL_Renderer *renderer)
     SDL_Color white = { 62, 81, 100, 255 };
     SDL_Color green = { 159, 226, 191, 255 };
 
-    char r[20] = { 0 };
-    sprintf(r, "rot:%f", rot);
-    draw_text(renderer, font, r, win_width - 100, 15 * 0 + 10, green);
+    // char r[20] = { 0 };
+    // sprintf(r, "rot:%f", rot);
+    // draw_text(renderer, font, r, win_width - 100, 15 * 0 + 10, green);
 
     // TODO: make this better 😒
     if (render_method == RENDER_WIRE) {
