@@ -25,7 +25,9 @@ void render(void);
 void free_resources(void);
 
 // Stores the 2D projected points to be drawn
-triangle_t *triangles_to_render = NULL;
+#define MAX_TRIANGLES_PER_MESH 10000
+triangle_t triangles_to_render[MAX_TRIANGLES_PER_MESH];
+int num_triangles_to_render = 0;
 
 vec3_t camera_pos = { 0, 0, 0 };
 
@@ -99,9 +101,9 @@ bool setup(void)
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
     // load_cube_mesh_data();
-    load_obj("./assets/f22.obj");
+    load_obj("./assets/drone.obj");
 
-    load_png_texture_data("./assets/f22.png");
+    load_png_texture_data("./assets/drone.png");
 
     return true;
 }
@@ -188,8 +190,8 @@ void update(void)
     }
     prev_frame_time = SDL_GetTicks();
 
-    // Initialize triangles to render
-    triangles_to_render = NULL;
+    // Initialize triangles to render counter for current frame
+    num_triangles_to_render = 0;
 
     // Change the mesh scale/rotation/translation with matrix
     mesh.rotation.x += rot;
@@ -310,7 +312,9 @@ void update(void)
             .colour = mesh_face.colour
         };
 
-        array_push(triangles_to_render, projected_triangle);
+        if (num_triangles_to_render < MAX_TRIANGLES_PER_MESH) {
+            triangles_to_render[num_triangles_to_render++] = projected_triangle;
+        }
     }
 }
 
@@ -318,8 +322,7 @@ void render(void)
 {
     draw_grid();
 
-    size_t num_triangles = array_length(triangles_to_render);
-    for (size_t i = 0; i < num_triangles; i++) {
+    for (size_t i = 0; i < (size_t)num_triangles_to_render; i++) {
         triangle_t triangle = triangles_to_render[i];
 
         if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE) {
@@ -361,9 +364,6 @@ void render(void)
             draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFF0000);
         }
     }
-
-    // Clear triangles to render
-    array_free(triangles_to_render);
 
     render_colour_buf();
     clear_colour_buf(0xFF000000);
