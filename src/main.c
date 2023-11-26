@@ -191,7 +191,7 @@ void update(void)
     mesh.rotation.x += rot;
     // mesh.rotation.y += 0.003;
     // mesh.rotation.z += 0.004;
-    mesh.translation.z = 5.0; // zoom
+    mesh.translation.z = zoom;
 
     // Create scale/rotation/translation matrices
     mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);

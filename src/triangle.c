@@ -1,5 +1,7 @@
 #include "display.h"
+#include "texture.h"
 #include "triangle.h"
+#include "vector.h"
 #include <stddef.h>
 
 #define SWAP(a, b) _Generic((a), int *: int_swap, float *: float_swap)(a, b)
@@ -57,6 +59,69 @@ void draw_fill_triangle(int x0, int y0, int x1, int y1, int x2, int y2, const ui
     fill_flat_top_triangle(x1, y1, mx, my, x2, y2, colour);
 }
 
+vec3_t barycentric_weights(const vec2_t a, const vec2_t b, vec2_t c, vec2_t p)
+{
+    /*
+     *          B
+     *         /|\
+     *        / | \
+     *       /  |  \
+     *      /  (p)  \
+     *     /  /   \  \
+     *    / /       \ \
+     *   //___________\\
+     *  A               C
+     */
+    // Vectors between vertices
+    const vec2_t ac = vec2_sub(c, a);
+    const vec2_t ab = vec2_sub(b, a);
+    const vec2_t ap = vec2_sub(p, a);
+    const vec2_t pc = vec2_sub(c, p);
+    const vec2_t pb = vec2_sub(b, p);
+
+    // Calculate area of ABC (parallegram/triangle ABC) "2D cross product"
+    const float area_para_abc = ac.x * ab.y - ac.y * ab.x; // || AC x AB ||
+
+    // α which is area PBC / area ABC
+    const float alpha = (pc.x * pb.y - pc.y * pb.x) / area_para_abc;
+
+    // β which is area APC / area ABC
+    const float beta = (ac.x * ap.y - ac.y * ap.x) / area_para_abc;
+
+    // γ is what's left of 1.0 - α - β because barycentric coords add up to 1.0
+    const float gamma = 1 - alpha - beta;
+
+    return (vec3_t) {
+        alpha, beta, gamma
+    };
+}
+
+void draw_texel(
+    const int x, const int y,
+    const uint32_t *texture,
+    const vec2_t point_a, const vec2_t point_b, const vec2_t point_c,
+    const float u0, const float v0, const float u1, const float v1, const float u2, const float v2
+)
+{
+    const vec2_t point_p = { x, y };
+    const vec3_t weights = barycentric_weights(point_a, point_b, point_c, point_p);
+    const float alpha = weights.x;
+    const float beta = weights.y;
+    const float gamma = weights.z;
+
+    // Interpolate UV values using barycentric weights
+    const float interpolated_u = u0 * alpha + u1 * beta + u2 * gamma;
+    const float interpolated_v = v0 * alpha + v1 * beta + v2 * gamma;
+
+    // Map UV coords to texture width and height
+    const int tex_x = abs((int)(interpolated_u * texture_width));
+    const int tex_y = abs((int)(interpolated_v * texture_width));
+
+    // Ensure that the calculated idx is within the array bounds
+    const int idx = ((texture_width * tex_y) + tex_x) % (texture_width * texture_height);
+    draw_pixel(x, y, texture[idx]);
+}
+
 void draw_textured_triangle(
     int x0, int y0, float u0, float v0,
     int x1, int y1, float u1, float v1,
@@ -84,6 +149,10 @@ void draw_textured_triangle(
         SWAP(&v0, &v1);
     }
 
+    const vec2_t point_a = { x0, y0 };
+    const vec2_t point_b = { x1, y1 };
+    const vec2_t point_c = { x2, y2 };
+
     // Render the top of the triangle i.e. the flat bottomed triangle
     // Inverse slope because we need to calculate the y increment
     float inv_slope1 = 0;
@@ -106,7 +175,7 @@ void draw_textured_triangle(
             }
 
             for (int x = xstart; x < xend; x++) {
-                draw_pixel(x, y, 0xFFFF00FF);
+                draw_texel(x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2, v2);
             }
         }
     }
@@ -133,7 +202,7 @@ void draw_textured_triangle(
             }
 
             for (int x = xstart; x < xend; x++) {
-                draw_pixel(x, y, 0xFFFF00FF);
+                draw_texel(x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2, v2);
             }
         }
     }
