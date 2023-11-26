@@ -290,10 +290,6 @@ void update(void)
             projected_points[j].y += win_height / 2.0;
         }
 
-        // Average depth of face based off avg z of translated vertices
-        float avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z)
-            / NUM_TRIANGLE_VERTICES;
-
         if (lighting) {
             // Calculate light intensity based on face normal relation to light direction
             float light_intensity_factor = -vec3_dot(normal, light.direction);
@@ -311,23 +307,10 @@ void update(void)
                 { mesh_face.b_uv.u, mesh_face.b_uv.v },
                 { mesh_face.c_uv.u, mesh_face.c_uv.v },
             },
-            .colour = mesh_face.colour,
-            .avg_depth = avg_depth
+            .colour = mesh_face.colour
         };
 
         array_push(triangles_to_render, projected_triangle);
-    }
-
-    // Sort faces based on depth with bubble sort
-    size_t num_triangles = (size_t)array_length(triangles_to_render);
-    for (size_t i = 0; i < num_triangles; i++) {
-        for (size_t j = i; j < num_triangles; j++) {
-            if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) {
-                triangle_t temp = triangles_to_render[i];
-                triangles_to_render[i] = triangles_to_render[j];
-                triangles_to_render[j] = temp;
-            }
-        }
     }
 }
 
@@ -341,9 +324,9 @@ void render(void)
 
         if (render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE) {
             draw_fill_triangle(
-                triangle.points[0].x, triangle.points[0].y,
-                triangle.points[1].x, triangle.points[1].y,
-                triangle.points[2].x, triangle.points[2].y,
+                triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w,
+                triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w,
+                triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w,
                 triangle.colour
             );
         }

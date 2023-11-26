@@ -21,13 +21,23 @@ typedef struct {
 typedef struct {
 	vec4_t points[NUM_TRIANGLE_VERTICES];
 	tex2_t texcoords[NUM_TRIANGLE_VERTICES];
-	float avg_depth;
 	uint32_t colour;
 } triangle_t;
 
-void draw_fill_triangle(int x0, int y0, int x1, int y1, int x2, int y2, const uint32_t colour);
+void draw_triangle(const int x0, const int y0, const int x1, const int y1, const int x2, const int y2, uint32_t colour);
+void draw_fill_triangle(
+    int x0, int y0, float z0, float w0,
+    int x1, int y1, float z1, float w1,
+    int x2, int y2, float z2, float w2,
+    const uint32_t colour
+);
 vec3_t barycentric_weights(const vec2_t a, const vec2_t b, vec2_t c, vec2_t p);
-void draw_texel(
+void draw_triangle_pixel(
+    const int x, const int y,
+    const uint32_t colour,
+    const vec4_t point_a, const vec4_t point_b, const vec4_t point_c
+);
+void draw_triangle_texel(
     const int x, const int y,
     const uint32_t *texture,
     const vec4_t point_a, const vec4_t point_b, const vec4_t point_c,

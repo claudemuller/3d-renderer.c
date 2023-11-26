@@ -21,43 +21,97 @@ static void float_swap(float *a, float *b)
     *b = t;
 }
 
-void draw_fill_triangle(int x0, int y0, int x1, int y1, int x2, int y2, const uint32_t colour)
+void draw_triangle(const int x0, const int y0, const int x1, const int y1, const int x2, const int y2, uint32_t colour)
+{
+    draw_line(x0, y0, x1, y1, colour);
+    draw_line(x1, y1, x2, y2, colour);
+    draw_line(x2, y2, x0, y0, colour);
+}
+
+void draw_fill_triangle(
+    int x0, int y0, float z0, float w0,
+    int x1, int y1, float z1, float w1,
+    int x2, int y2, float z2, float w2,
+    const uint32_t colour
+)
 {
     // Sort vertices by y-coord asc (y0 < y1 < y2)
     if (y0 > y1) {
         SWAP(&y0, &y1);
         SWAP(&x0, &x1);
+        SWAP(&z0, &z1);
+        SWAP(&w0, &w1);
     }
     if (y1 > y2) {
         SWAP(&y1, &y2);
         SWAP(&x1, &x2);
+        SWAP(&z1, &z2);
+        SWAP(&w1, &w2);
     }
     if (y0 > y1) {
         SWAP(&y0, &y1);
         SWAP(&x0, &x1);
+        SWAP(&z0, &z1);
+        SWAP(&w0, &w1);
     }
 
-    if (y1 == y2) {
-        // Draw the top half of the triangle
-        fill_flat_bottom_triangle(x0, y0, x1, y1, x2, y2, colour);
-        return;
+    const vec4_t point_a = { x0, y0, z0, w0 };
+    const vec4_t point_b = { x1, y1, z1, w1 };
+    const vec4_t point_c = { x2, y2, z2, w2 };
+
+    // Render the top of the triangle i.e. the flat bottomed triangle
+    // Inverse slope because we need to calculate the y increment
+    float inv_slope1 = 0;
+    if (y1 - y0 != 0) { // Guard against div by zero
+        inv_slope1 = (float)(x1 - x0) / abs(y1 - y0);
     }
 
-    if (y0 == y1) {
-        // Draw the bottom half of the triangle
-        fill_flat_top_triangle(x0, y0, x1, y1, x2, y2, colour);
-        return;
+    float inv_slope2 = 0;
+    if (y2 - y0 != 0) { // Guard against div by zero
+        inv_slope2 = (float)(x2 - x0) / abs(y2 - y0);
     }
 
-    // Calculate triangle midpoint
-    int my = y1;
-    int mx = ((float)((x2 - x0) * (y1 - y0)) / (float)(y2 - y0)) + x0;
+    if (y1 - y0 != 0) {
+        for (int y = y0; y <= y1; y++) {
+            int xstart = x1 + (y - y1) * inv_slope1;
+            int xend = x0 + (y - y0) * inv_slope2;
 
-    // Draw the top half of the triangle
-    fill_flat_bottom_triangle(x0, y0, x1, y1, mx, my, colour);
+            if (xend < xstart) {
+                SWAP(&xstart, &xend);
+            }
 
-    // Draw the bottom half of the triangle
-    fill_flat_top_triangle(x1, y1, mx, my, x2, y2, colour);
+            for (int x = xstart; x < xend; x++) {
+                draw_triangle_pixel(x, y, colour, point_a, point_b, point_c);
+            }
+        }
+    }
+
+    // Render the bottom of the triangle i.e. the flat topped triangle
+    // Inverse slope because we need to calculate the y increment
+    inv_slope1 = 0;
+    if (y2 - y1 != 0) { // Guard against div by zero
+        inv_slope1 = (float)(x2 - x1) / abs(y2 - y1);
+    }
+
+    inv_slope2 = 0;
+    if (y2 - y0 != 0) { // Guard against div by zero
+        inv_slope2 = (float)(x2 - x0) / abs(y2 - y0);
+    }
+
+    if (y2 - y1 != 0) {
+        for (int y = y1; y <= y2; y++) {
+            int xstart = x1 + (y - y1) * inv_slope1;
+            int xend = x0 + (y - y0) * inv_slope2;
+
+            if (xend < xstart) {
+                SWAP(&xstart, &xend);
+            }
+
+            for (int x = xstart; x < xend; x++) {
+                draw_triangle_pixel(x, y, colour, point_a, point_b, point_c);
+            }
+        }
+    }
 }
 
 vec3_t barycentric_weights(const vec2_t a, const vec2_t b, vec2_t c, vec2_t p)
@@ -97,7 +151,38 @@ vec3_t barycentric_weights(const vec2_t a, const vec2_t b, vec2_t c, vec2_t p)
     };
 }
 
-void draw_texel(
+void draw_triangle_pixel(
+    const int x, const int y,
+    const uint32_t colour,
+    const vec4_t point_a, const vec4_t point_b, const vec4_t point_c
+)
+{
+    const vec2_t p = { x, y };
+    const vec2_t a = vec2_from_vec4(point_a);
+    const vec2_t b = vec2_from_vec4(point_b);
+    const vec2_t c = vec2_from_vec4(point_c);
+    const vec3_t weights = barycentric_weights(a, b, c, p);
+    const float alpha = weights.x;
+    const float beta = weights.y;
+    const float gamma = weights.z;
+
+    // Interpolate the value of 1/w for current pixel
+    // TODO: pull out this reciprocal calc out of this func
+    float interpolated_reciprocal_w = (1 / point_a.w) * alpha + (1 / point_b.w) * beta + (1 / point_c.w) * gamma;
+
+    // Adjust 1/w so that pixels closer to camera are smaller than those behind
+    interpolated_reciprocal_w = 1.0 - interpolated_reciprocal_w;
+
+    // Only draw pixel if depth value is less than what was already in z_buf
+    if (interpolated_reciprocal_w < z_buf[(win_width * y) + x]) {
+        draw_pixel(x, y, colour);
+
+        // Update z_buf with the 1/w of current pixel
+        z_buf[(win_width * y) + x] = interpolated_reciprocal_w;
+    }
+}
+
+void draw_triangle_texel(
     const int x, const int y,
     const uint32_t *texture,
     const vec4_t point_a, const vec4_t point_b, const vec4_t point_c,
@@ -208,7 +293,7 @@ void draw_textured_triangle(
             }
 
             for (int x = xstart; x < xend; x++) {
-                draw_texel(x, y, texture, point_a, point_b, point_c, a_uv, b_uv, c_uv);
+                draw_triangle_texel(x, y, texture, point_a, point_b, point_c, a_uv, b_uv, c_uv);
             }
         }
     }
@@ -235,7 +320,7 @@ void draw_textured_triangle(
             }
 
             for (int x = xstart; x < xend; x++) {
-                draw_texel(x, y, texture, point_a, point_b, point_c, a_uv, b_uv, c_uv);
+                draw_triangle_texel(x, y, texture, point_a, point_b, point_c, a_uv, b_uv, c_uv);
             }
         }
     }

@@ -123,18 +123,6 @@ void draw_line(const int x0, const int y0, const int x1, const int y1, const uin
     }
 }
 
-void draw_triangle(
-    const int x0, const int y0,
-    const int x1, const int y1,
-    const int x2, const int y2,
-    uint32_t colour
-)
-{
-    draw_line(x0, y0, x1, y1, colour);
-    draw_line(x1, y1, x2, y2, colour);
-    draw_line(x2, y2, x0, y0, colour);
-}
-
 void draw_rect(const int x, const int y, const int w, const int h, const uint32_t colour)
 {
     int cur_x = 0, cur_y = 0;

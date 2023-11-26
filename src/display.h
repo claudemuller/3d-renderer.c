@@ -46,12 +46,6 @@ void clear_z_buf(void);
 void render_colour_buf(void);
 void draw_pixel(const int x, const int y, const uint32_t colour);
 void draw_line(const int x0, const int y0, const int x1, const int y1, const uint32_t colour);
-void draw_triangle(
-  const int x0, const int y0,
-  const int x1, const int y1,
-  const int x2, const int y2,
-  uint32_t colour
-);
 void draw_rect(const int x, const int y, const int w, const int h, const uint32_t colour);
 void draw_grid(void);
 void draw_ui(SDL_Renderer *renderer);
