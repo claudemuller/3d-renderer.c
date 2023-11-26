@@ -6,6 +6,7 @@
 #include "mesh.h"
 #include "texture.h"
 #include "triangle.h"
+#include "upng.h"
 #include "vector.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -74,7 +75,7 @@ bool setup(void)
 
     colour_buf_tex = SDL_CreateTexture(
         renderer,
-        SDL_PIXELFORMAT_ARGB8888,
+        SDL_PIXELFORMAT_RGBA32,
         SDL_TEXTUREACCESS_STREAMING,
         win_width,
         win_height
@@ -91,13 +92,10 @@ bool setup(void)
     float zfar = 100.0;
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
-    // Load hard-coded texture data into static array
-    mesh_texture = (uint32_t *)REDBRICK_TEXTURE;
-    texture_width = 64;
-    texture_height = 64;
-
     load_cube_mesh_data();
     // load_obj("./assets/f22.obj");
+
+    load_png_texture_data("./assets/cube.png");
 
     return true;
 }
