@@ -126,12 +126,10 @@ void draw_texel(
     interpolated_v /= interpolated_reciprocal_w;
 
     // Map UV coords to texture width and height
-    const int tex_x = abs((int)(interpolated_u * texture_width));
-    const int tex_y = abs((int)(interpolated_v * texture_width));
+    const int tex_x = abs((int)(interpolated_u * texture_width) % texture_width); // Clamp value within tex width
+    const int tex_y = abs((int)(interpolated_v * texture_width) % texture_height); // Clamp value within tex height
 
-    // Ensure that the calculated idx is within the array bounds
-    const int idx = ((texture_width * tex_y) + tex_x) % (texture_width * texture_height);
-    draw_pixel(x, y, texture[idx]);
+    draw_pixel(x, y, texture[(texture_width * tex_y) + tex_x]);
 }
 
 void draw_textured_triangle(

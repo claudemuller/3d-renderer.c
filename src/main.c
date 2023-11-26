@@ -93,10 +93,10 @@ bool setup(void)
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
     // load_cube_mesh_data();
-    load_obj("./assets/cube.obj");
+    load_obj("./assets/f22.obj");
     // load_obj("./assets/f22.obj");
 
-    load_png_texture_data("./assets/cube.png");
+    load_png_texture_data("./assets/f22.png");
 
     return true;
 }
@@ -187,9 +187,9 @@ void update(void)
     triangles_to_render = NULL;
 
     // Change the mesh scale/rotation/translation with matrix
-    // mesh.rotation.x += rot;
-    mesh.rotation.y += rot;
-    // mesh.rotation.z += 0.004;
+    mesh.rotation.x += rot;
+    // mesh.rotation.y += rot;
+    // mesh.rotation.z += rot;
     mesh.translation.z = zoom;
 
     // Create scale/rotation/translation matrices
