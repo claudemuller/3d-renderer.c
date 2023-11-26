@@ -153,6 +153,14 @@ vec4_t vec4_from_vec3(const vec3_t v)
     };
 }
 
+vec2_t vec2_from_vec4(const vec4_t v)
+{
+    return (vec2_t) {
+        .x = v.x,
+        .y = v.y,
+    };
+}
+
 vec3_t vec3_from_vec4(const vec4_t v)
 {
     return (vec3_t) {

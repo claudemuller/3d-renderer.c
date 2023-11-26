@@ -1,3 +1,4 @@
+#include "SDL_events.h"
 #include "display.h"
 #include "texture.h"
 #include "triangle.h"
@@ -99,19 +100,29 @@ vec3_t barycentric_weights(const vec2_t a, const vec2_t b, vec2_t c, vec2_t p)
 void draw_texel(
     const int x, const int y,
     const uint32_t *texture,
-    const vec2_t point_a, const vec2_t point_b, const vec2_t point_c,
+    const vec4_t point_a, const vec4_t point_b, const vec4_t point_c,
     const float u0, const float v0, const float u1, const float v1, const float u2, const float v2
 )
 {
-    const vec2_t point_p = { x, y };
-    const vec3_t weights = barycentric_weights(point_a, point_b, point_c, point_p);
+    const vec2_t p = { x, y };
+    const vec2_t a = vec2_from_vec4(point_a);
+    const vec2_t b = vec2_from_vec4(point_b);
+    const vec2_t c = vec2_from_vec4(point_c);
+    const vec3_t weights = barycentric_weights(a, b, c, p);
     const float alpha = weights.x;
     const float beta = weights.y;
     const float gamma = weights.z;
 
-    // Interpolate UV values using barycentric weights
-    const float interpolated_u = u0 * alpha + u1 * beta + u2 * gamma;
-    const float interpolated_v = v0 * alpha + v1 * beta + v2 * gamma;
+    // Interpolate U/w and V/w values using barycentric weights and a factor of 1/w
+    float interpolated_u = (u0 / point_a.w) * alpha + (u1 / point_b.w) * beta + (u2 / point_c.w) * gamma;
+    float interpolated_v = (v0 / point_a.w) * alpha + (v1 / point_b.w) * beta + (v2 / point_c.w) * gamma;
+
+    // Interpolate the value of 1/w for current pixel
+    float interpolated_reciprocal_w = (1 / point_a.w) * alpha + (1 / point_b.w) * beta + (1 / point_c.w) * gamma;
+
+    // Divide the values back by 1/w to "reverse" the reciprocal calulation
+    interpolated_u /= interpolated_reciprocal_w;
+    interpolated_v /= interpolated_reciprocal_w;
 
     // Map UV coords to texture width and height
     const int tex_x = abs((int)(interpolated_u * texture_width));
@@ -123,9 +134,9 @@ void draw_texel(
 }
 
 void draw_textured_triangle(
-    int x0, int y0, float u0, float v0,
-    int x1, int y1, float u1, float v1,
-    int x2, int y2, float u2, float v2,
+    int x0, int y0, float z0, float w0, float u0, float v0,
+    int x1, int y1, float z1, float w1, float u1, float v1,
+    int x2, int y2, float z2, float w2, float u2, float v2,
     const uint32_t *texture
 )
 {
@@ -133,25 +144,31 @@ void draw_textured_triangle(
     if (y0 > y1) {
         SWAP(&y0, &y1);
         SWAP(&x0, &x1);
+        SWAP(&z0, &z1);
+        SWAP(&w0, &w1);
         SWAP(&u0, &u1);
         SWAP(&v0, &v1);
     }
     if (y1 > y2) {
         SWAP(&y1, &y2);
         SWAP(&x1, &x2);
+        SWAP(&z1, &z2);
+        SWAP(&w1, &w2);
         SWAP(&u1, &u2);
         SWAP(&v1, &v2);
     }
     if (y0 > y1) {
         SWAP(&y0, &y1);
         SWAP(&x0, &x1);
+        SWAP(&z0, &z1);
+        SWAP(&w0, &w1);
         SWAP(&u0, &u1);
         SWAP(&v0, &v1);
     }
 
-    const vec2_t point_a = { x0, y0 };
-    const vec2_t point_b = { x1, y1 };
-    const vec2_t point_c = { x2, y2 };
+    const vec4_t point_a = { x0, y0, z0, w0 };
+    const vec4_t point_b = { x1, y1, z1, w1 };
+    const vec4_t point_c = { x2, y2, z2, w2 };
 
     // Render the top of the triangle i.e. the flat bottomed triangle
     // Inverse slope because we need to calculate the y increment

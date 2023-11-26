@@ -189,8 +189,8 @@ void update(void)
 
     // Change the mesh scale/rotation/translation with matrix
     mesh.rotation.x += rot;
-    // mesh.rotation.y += 0.003;
-    // mesh.rotation.z += 0.004;
+    mesh.rotation.y += 0.003;
+    mesh.rotation.z += 0.004;
     mesh.translation.z = zoom;
 
     // Create scale/rotation/translation matrices
@@ -298,9 +298,9 @@ void update(void)
 
         triangle_t projected_triangle = {
             .points = {
-                { projected_points[0].x, projected_points[0].y },
-                { projected_points[1].x, projected_points[1].y },
-                { projected_points[2].x, projected_points[2].y },
+                { projected_points[0].x, projected_points[0].y, projected_points[0].z, projected_points[0].w },
+                { projected_points[1].x, projected_points[1].y, projected_points[1].z, projected_points[1].w },
+                { projected_points[2].x, projected_points[2].y, projected_points[2].z, projected_points[2].w },
             },
             .texcoords = {
                 { mesh_face.a_uv.u, mesh_face.a_uv.v },
@@ -342,21 +342,14 @@ void render(void)
                 triangle.points[2].x, triangle.points[2].y,
                 triangle.colour
             );
-
-            // SDL_Color red = { 255, 0, 0, 255 };
-            // int font_size = 12;
-            // TTF_Font *font = TTF_OpenFont("./assets/fonts/FiraCode-Regular.ttf", font_size);
-            // char idx[5];
-            // sprintf(idx, "%d", (int)triangle.idx);
-            // draw_text(renderer, font, idx, win_width - 100, 15 * 0 + 10, red);
-            // TTF_CloseFont(font);
         }
 
         if (render_method == RENDER_TEXTURED || render_method == RENDER_TEXTURED_WIRE) {
+            // TODO: way too many args - fix 🤮
             draw_textured_triangle(
-                triangle.points[0].x, triangle.points[0].y, triangle.texcoords[0].u, triangle.texcoords[0].v,
-                triangle.points[1].x, triangle.points[1].y, triangle.texcoords[1].u, triangle.texcoords[1].v,
-                triangle.points[2].x, triangle.points[2].y, triangle.texcoords[2].u, triangle.texcoords[2].v,
+                triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].u, triangle.texcoords[0].v,
+                triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].u, triangle.texcoords[1].v,
+                triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].u, triangle.texcoords[2].v,
                 mesh_texture
             );
         }

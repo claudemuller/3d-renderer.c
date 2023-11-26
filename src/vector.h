@@ -40,6 +40,7 @@ vec3_t vec3_rotate_y(const vec3_t v, const float angle);
 vec3_t vec3_rotate_z(const vec3_t v, const float angle);
 
 vec4_t vec4_from_vec3(const vec3_t v);
+vec2_t vec2_from_vec4(const vec4_t v);
 vec3_t vec3_from_vec4(const vec4_t v);
 
 #endif // VECTOR_H
