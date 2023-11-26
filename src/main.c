@@ -188,9 +188,9 @@ void update(void)
     triangles_to_render = NULL;
 
     // Change the mesh scale/rotation/translation with matrix
-    mesh.rotation.x += rot;
-    mesh.rotation.y += 0.003;
-    mesh.rotation.z += 0.004;
+    // mesh.rotation.x += rot;
+    mesh.rotation.y += rot;
+    // mesh.rotation.z += 0.004;
     mesh.translation.z = zoom;
 
     // Create scale/rotation/translation matrices
