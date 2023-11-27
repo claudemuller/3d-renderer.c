@@ -162,13 +162,39 @@ void process_input(void)
             cull_method = CULL_BACKFACE;
         } break;
 
-        case SDLK_d: {
+        case SDLK_x: {
             cull_method = CULL_NONE;
         } break;
 
         case SDLK_p: {
             rot = rot == 0 ? 0.005 : 0;
             is_paused = !is_paused;
+        } break;
+
+        case SDLK_w: {
+            camera.forward_vel = vec3_mul(camera.direction, 5.0 * delta_time);
+            camera.pos = vec3_add(camera.pos, camera.forward_vel);
+        } break;
+
+        case SDLK_s: {
+            camera.forward_vel = vec3_mul(camera.direction, 5.0 * delta_time);
+            camera.pos = vec3_sub(camera.pos, camera.forward_vel);
+        } break;
+
+        case SDLK_a: {
+            camera.yaw += 1.0 * delta_time;
+        } break;
+
+        case SDLK_d: {
+            camera.yaw -= 1.0 * delta_time;
+        } break;
+
+        case SDLK_UP: {
+            camera.pos.y += 3.0 * delta_time;
+        } break;
+
+        case SDLK_DOWN: {
+            camera.pos.y -= 3.0 * delta_time;
         } break;
         }
     } break;
@@ -197,17 +223,17 @@ void update(void)
     num_triangles_to_render = 0;
 
     // Change the mesh scale/rotation/translation with matrix
-    mesh.rotation.x += 0.6 * delta_time;
-    mesh.rotation.y += 0.6 * delta_time;
-    mesh.rotation.z += 0.6 * delta_time;
-    mesh.translation.z = zoom;
+    // mesh.rotation.x += 0.6 * delta_time;
+    // mesh.rotation.y += 0.6 * delta_time;
+    // mesh.rotation.z += 0.6 * delta_time;
+    mesh.translation.z = 5.0;
 
-    camera.position.x += 0.0 * delta_time;
-    camera.position.y += 0.0 * delta_time;
-
-    // Create view matrix looking at target
-    vec3_t target = { 0, 0, zoom };
-    mat4_t view_matrix = mat4_look_at(camera.position, target, (vec3_t) { 0, 1, 0 });
+    // Create view matrix looking
+    vec3_t target = { 0, 0, 1 };
+    mat4_t camera_yaw_rotation = mat4_make_rotation_y(camera.yaw);
+    camera.direction = vec3_from_vec4(mat4_mul_vec4(camera_yaw_rotation, vec4_from_vec3(target)));
+    target = vec3_add(camera.pos, camera.direction);
+    mat4_t view_matrix = mat4_look_at(camera.pos, target, (vec3_t) { 0, 1, 0 });
 
     // Create scale/rotation/translation matrices
     mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);

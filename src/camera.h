@@ -4,8 +4,10 @@
 #include "vector.h"
 
 typedef struct {
-	vec3_t position;
+	vec3_t pos;
 	vec3_t direction;
+	vec3_t forward_vel;
+	float yaw; // angle in radians
 } camera_t;
 
 extern camera_t camera;

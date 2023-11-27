@@ -144,7 +144,7 @@ void draw_grid(void)
     }
 }
 
-#define UI_LEN 12
+#define UI_LEN 18
 
 void draw_ui(SDL_Renderer *renderer)
 {
@@ -163,8 +163,14 @@ void draw_ui(SDL_Renderer *renderer)
         "<6> - textured",
         "<7> - textured wire",
         "<c> - cull backface",
-        "<d> - cull none",
+        "<x> - cull none",
         "<p> - pause",
+        "<w> - forward",
+        "<s> - backwards",
+        "<a> - turn left",
+        "<d> - turn right",
+        "<up> - up",
+        "<down> - down",
         "<mouse-wheel> zoom in/out",
         "<esc> - quit"
     };
