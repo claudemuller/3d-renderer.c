@@ -32,6 +32,7 @@ int num_triangles_to_render = 0;
 
 bool running = false;
 int prev_frame_time = 0;
+float delta_time = 0;
 
 float zoom = 5.0;
 mat4_t proj_matrix = { 0 };
@@ -101,9 +102,9 @@ bool setup(void)
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
     // load_cube_mesh_data();
-    load_obj("./assets/efa.obj");
+    load_obj("./assets/cube.obj");
 
-    load_png_texture_data("./assets/efa.png");
+    load_png_texture_data("./assets/cube.png");
 
     return true;
 }
@@ -188,19 +189,21 @@ void update(void)
     if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
         SDL_Delay(time_to_wait);
     }
+
+    delta_time = (SDL_GetTicks() - prev_frame_time) / 1000.0;
     prev_frame_time = SDL_GetTicks();
 
     // Initialize triangles to render counter for current frame
     num_triangles_to_render = 0;
 
     // Change the mesh scale/rotation/translation with matrix
-    mesh.rotation.x += 0.0;
-    mesh.rotation.y += 0.0;
-    mesh.rotation.z += 0.0;
+    mesh.rotation.x += 0.6 * delta_time;
+    mesh.rotation.y += 0.6 * delta_time;
+    mesh.rotation.z += 0.6 * delta_time;
     mesh.translation.z = zoom;
 
-    camera.position.x += 0.008;
-    camera.position.y += 0.008;
+    camera.position.x += 0.0 * delta_time;
+    camera.position.y += 0.0 * delta_time;
 
     // Create view matrix looking at target
     vec3_t target = { 0, 0, zoom };
@@ -366,9 +369,9 @@ void render(void)
         }
 
         if (render_method == RENDER_WIRE_VERTEX) {
-            draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFF0000);
-            draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFF0000);
-            draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFF0000);
+            draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFF0000FF);
+            draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFF0000FF);
+            draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFF0000FF);
         }
     }
 
