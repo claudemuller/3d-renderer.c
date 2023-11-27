@@ -169,3 +169,17 @@ vec4_t mat4_mul_vec4_project(const mat4_t mat4_proj, const vec4_t v)
 
     return result;
 }
+
+mat4_t mat4_look_at(const vec3_t eye, const vec3_t target, const vec3_t up)
+{
+    vec3_t z = vec3_sub(target, eye); // forward/z vector
+    vec3_normalise(&z);
+    vec3_t x = vec3_cross(up, z); // right/x vector (cross product of up and z is perpendicular vector x)
+    vec3_normalise(&x);
+    vec3_t y = vec3_cross(z, x); // up/y vector (cross product of z and x is perpendicular vector z)
+
+    return (mat4_t) { { { x.x, x.y, x.z, -vec3_dot(x, eye) },
+                        { y.x, y.y, y.z, -vec3_dot(y, eye) },
+                        { z.x, z.y, z.z, -vec3_dot(z, eye) },
+                        { 0, 0, 0, 1 } } };
+}

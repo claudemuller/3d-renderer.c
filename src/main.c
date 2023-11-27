@@ -1,5 +1,6 @@
 #include "SDL.h"
 #include "array.h"
+#include "camera.h"
 #include "display.h"
 #include "light.h"
 #include "matrix.h"
@@ -29,13 +30,12 @@ void free_resources(void);
 triangle_t triangles_to_render[MAX_TRIANGLES_PER_MESH];
 int num_triangles_to_render = 0;
 
-vec3_t camera_pos = { 0, 0, 0 };
-
 bool running = false;
 int prev_frame_time = 0;
 
 float zoom = 5.0;
 mat4_t proj_matrix = { 0 };
+mat4_t view_matrix = { 0 };
 
 int main(int argc, char *argv[])
 {
@@ -101,9 +101,9 @@ bool setup(void)
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
     // load_cube_mesh_data();
-    load_obj("./assets/drone.obj");
+    load_obj("./assets/efa.obj");
 
-    load_png_texture_data("./assets/drone.png");
+    load_png_texture_data("./assets/efa.png");
 
     return true;
 }
@@ -194,18 +194,21 @@ void update(void)
     num_triangles_to_render = 0;
 
     // Change the mesh scale/rotation/translation with matrix
-    mesh.rotation.x += rot;
-    // mesh.rotation.y += rot;
-    // mesh.rotation.z += rot;
+    mesh.rotation.x += 0.0;
+    mesh.rotation.y += 0.0;
+    mesh.rotation.z += 0.0;
     mesh.translation.z = zoom;
+
+    camera.position.x += 0.008;
+    camera.position.y += 0.008;
+
+    // Create view matrix looking at target
+    vec3_t target = { 0, 0, zoom };
+    mat4_t view_matrix = mat4_look_at(camera.position, target, (vec3_t) { 0, 1, 0 });
 
     // Create scale/rotation/translation matrices
     mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
-    mat4_t translation_matrix = mat4_make_translation(
-        mesh.translation.x,
-        mesh.translation.y,
-        mesh.translation.z
-    );
+    mat4_t translation_matrix = mat4_make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
     mat4_t rotation_matrix_x = mat4_make_rotation_x(mesh.rotation.x);
     mat4_t rotation_matrix_y = mat4_make_rotation_y(mesh.rotation.y);
     mat4_t rotation_matrix_z = mat4_make_rotation_z(mesh.rotation.z);
@@ -238,6 +241,9 @@ void update(void)
 
             transformed_vertex = mat4_mul_vec4(world_matrix, transformed_vertex);
 
+            // Transform scene to camera space
+            transformed_vertex = mat4_mul_vec4(view_matrix, transformed_vertex);
+
             transformed_vertices[j] = transformed_vertex;
         }
 
@@ -260,7 +266,8 @@ void update(void)
         vec3_normalise(&normal);
 
         // Find vector between the triangle and the camera
-        vec3_t camera_ray = vec3_sub(camera_pos, vec_a);
+        vec3_t origin = { 0, 0, 0 };
+        vec3_t camera_ray = vec3_sub(origin, vec_a);
 
         // Calculate the dot product between the camera and triangle normal
         float dot_normal_camera = vec3_dot(normal, camera_ray);
