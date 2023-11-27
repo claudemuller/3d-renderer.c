@@ -144,7 +144,7 @@ void draw_grid(void)
     }
 }
 
-#define UI_LEN 18
+#define UI_LEN 17
 
 void draw_ui(SDL_Renderer *renderer)
 {
@@ -171,7 +171,6 @@ void draw_ui(SDL_Renderer *renderer)
         "<d> - turn right",
         "<up> - up",
         "<down> - down",
-        "<mouse-wheel> zoom in/out",
         "<esc> - quit"
     };
     SDL_Color white = { 62, 81, 100, 255 };

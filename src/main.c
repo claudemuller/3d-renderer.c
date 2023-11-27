@@ -1,6 +1,7 @@
 #include "SDL.h"
 #include "array.h"
 #include "camera.h"
+#include "clipping.h"
 #include "display.h"
 #include "light.h"
 #include "matrix.h"
@@ -34,7 +35,6 @@ bool running = false;
 int prev_frame_time = 0;
 float delta_time = 0;
 
-float zoom = 5.0;
 mat4_t proj_matrix = { 0 };
 mat4_t view_matrix = { 0 };
 
@@ -100,6 +100,8 @@ bool setup(void)
     float znear = 0.1;
     float zfar = 100.0;
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
+
+    init_frustum_planes(fov, znear, zfar);
 
     // load_cube_mesh_data();
     load_obj("./assets/cube.obj");
@@ -196,14 +198,6 @@ void process_input(void)
         case SDLK_DOWN: {
             camera.pos.y -= 3.0 * delta_time;
         } break;
-        }
-    } break;
-
-    case SDL_MOUSEWHEEL: {
-        if (ev.wheel.y < 0) {
-            zoom += 0.5;
-        } else if (ev.wheel.y > 0) {
-            zoom += -0.5;
         }
     } break;
     }
