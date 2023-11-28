@@ -95,13 +95,15 @@ bool setup(void)
     }
 
     // Init perspective projection matrix
-    float fov = M_PI / 3.0; // 60° (180/3)
-    float aspect = win_height / (float)win_width;
-    float znear = 0.1;
-    float zfar = 100.0;
-    proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
+    const float aspectx = win_width / (float)win_height;
+    const float aspecty = win_height / (float)win_width;
+    const float fovy = M_PI / 3.0; // 60° (180/3)
+    const float fovx = atan(tan(fovy / 2) * aspectx) * 2.0;
+    const float znear = 0.1;
+    const float zfar = 100.0;
+    proj_matrix = mat4_make_perspective(fovy, aspecty, znear, zfar);
 
-    init_frustum_planes(fov, znear, zfar);
+    init_frustum_planes(fovx, fovy, znear, zfar);
 
     // load_cube_mesh_data();
     load_obj("./assets/cube.obj");
@@ -238,10 +240,6 @@ void update(void)
 
     size_t num_faces = (size_t)array_length(mesh.faces);
     for (size_t i = 0; i < num_faces; i++) {
-        if (i != 4) {
-            continue;
-        }
-
         face_t mesh_face = mesh.faces[i];
 
         // Triangle face vertices
@@ -307,7 +305,7 @@ void update(void)
         }
 
         // Create polygon from original triangle to be clipped
-        polygon_t polygon = create_poly_from_triangle(
+        polygon_t polygon = poly_from_triangle(
             vec3_from_vec4(transformed_vertices[0]),
             vec3_from_vec4(transformed_vertices[1]),
             vec3_from_vec4(transformed_vertices[2])
@@ -315,50 +313,56 @@ void update(void)
 
         clip_polygon(&polygon);
 
-        // Break polygon back into triangles
+        // Break clipped polygon back into triangles
+        triangle_t triangles[MAX_TRIANGLES_PER_POLY] = { 0 };
+        size_t num_triangles = triangles_from_poly(&polygon, triangles);
 
-        // Project into screen space
-        vec4_t projected_points[NUM_TRIANGLE_VERTICES];
+        for (size_t t = 0; t < num_triangles; t++) {
+            triangle_t triangle = triangles[t];
 
-        // Loop all three vertices to perform projection
-        for (int j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
-            // Project current point to a 2D vector to draw
-            projected_points[j] = mat4_mul_vec4_project(proj_matrix, transformed_vertices[j]);
+            // Project into screen space
+            vec4_t projected_points[NUM_TRIANGLE_VERTICES];
 
-            // Scale into the viewport
-            projected_points[j].x *= win_width / 2.0;
-            projected_points[j].y *= win_height / 2.0;
+            // Loop all three vertices to perform projection
+            for (int j = 0; j < NUM_TRIANGLE_VERTICES; j++) {
+                // Project current point to a 2D vector to draw
+                projected_points[j] = mat4_mul_vec4_project(proj_matrix, triangle.points[j]);
 
-            // Invert y values to account for invert y growth between model and screen draw
-            projected_points[j].y *= -1;
+                // Scale into the viewport
+                projected_points[j].x *= win_width / 2.0;
+                projected_points[j].y *= win_height / 2.0;
 
-            // Translate projected point to centre of screen
-            projected_points[j].x += win_width / 2.0;
-            projected_points[j].y += win_height / 2.0;
-        }
+                // Invert y values to account for invert y growth between model and screen draw
+                projected_points[j].y *= -1;
 
-        if (lighting) {
-            // Calculate light intensity based on face normal relation to light direction
-            float light_intensity_factor = -vec3_dot(normal, light.direction);
-            mesh_face.colour = light_apply_intensity(mesh_face.colour, light_intensity_factor);
-        }
+                // Translate projected point to centre of screen
+                projected_points[j].x += win_width / 2.0;
+                projected_points[j].y += win_height / 2.0;
+            }
 
-        triangle_t projected_triangle = {
-            .points = {
-                { projected_points[0].x, projected_points[0].y, projected_points[0].z, projected_points[0].w },
-                { projected_points[1].x, projected_points[1].y, projected_points[1].z, projected_points[1].w },
-                { projected_points[2].x, projected_points[2].y, projected_points[2].z, projected_points[2].w },
-            },
-            .texcoords = {
-                { mesh_face.a_uv.u, mesh_face.a_uv.v },
-                { mesh_face.b_uv.u, mesh_face.b_uv.v },
-                { mesh_face.c_uv.u, mesh_face.c_uv.v },
-            },
-            .colour = mesh_face.colour
-        };
+            if (lighting) {
+                // Calculate light intensity based on face normal relation to light direction
+                float light_intensity_factor = -vec3_dot(normal, light.direction);
+                mesh_face.colour = light_apply_intensity(mesh_face.colour, light_intensity_factor);
+            }
 
-        if (num_triangles_to_render < MAX_TRIANGLES_PER_MESH) {
-            triangles_to_render[num_triangles_to_render++] = projected_triangle;
+            triangle_t triangle_to_render = {
+                .points = {
+                    { projected_points[0].x, projected_points[0].y, projected_points[0].z, projected_points[0].w },
+                    { projected_points[1].x, projected_points[1].y, projected_points[1].z, projected_points[1].w },
+                    { projected_points[2].x, projected_points[2].y, projected_points[2].z, projected_points[2].w },
+                },
+                .texcoords = {
+                    { mesh_face.a_uv.u, mesh_face.a_uv.v },
+                    { mesh_face.b_uv.u, mesh_face.b_uv.v },
+                    { mesh_face.c_uv.u, mesh_face.c_uv.v },
+                },
+                .colour = mesh_face.colour
+            };
+
+            if (num_triangles_to_render < MAX_TRIANGLES_PER_MESH) {
+                triangles_to_render[num_triangles_to_render++] = triangle_to_render;
+            }
         }
     }
 }

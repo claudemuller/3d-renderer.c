@@ -28,8 +28,11 @@ build: bin-dir
 bin-dir:
 	mkdir -p $(BIN_DIR)
 
+ifeq ($(shell uname -s),Darwin)
+else
 debug: debug-build
-	$(DBG_BIN) $(BIN) $(ARGS)
+	$(DBG_BIN) --args $(BIN) $(ARGS)
+endif
 
 debug-build: bin-dir
 	$(CC) $(CFLAGS) -g $(LIBS) $(SRC) -o $(BIN) $(LDFLAGS)

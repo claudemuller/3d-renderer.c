@@ -8,22 +8,24 @@
 
 plane_t frustum_planes[NUM_FRUSTUM_PLANES];
 
-void init_frustum_planes(const float fov, const float znear, const float zfar)
+void init_frustum_planes(const float fovx, const float fovy, const float znear, const float zfar)
 {
-    const float cos_half_fov = cos(fov / 2);
-    const float sin_half_fov = sin(fov / 2);
+    const float cos_half_fovx = cos(fovx / 2);
+    const float sin_half_fovx = sin(fovx / 2);
+    const float cos_half_fovy = cos(fovy / 2);
+    const float sin_half_fovy = sin(fovy / 2);
 
     frustum_planes[LEFT_FRUSTUM_PLANE].point = (vec3_t) { 0 };
-    frustum_planes[LEFT_FRUSTUM_PLANE].normal = (vec3_t) { cos_half_fov, 0, sin_half_fov };
+    frustum_planes[LEFT_FRUSTUM_PLANE].normal = (vec3_t) { cos_half_fovx, 0, sin_half_fovx };
 
     frustum_planes[RIGHT_FRUSTUM_PLANE].point = (vec3_t) { 0 };
-    frustum_planes[RIGHT_FRUSTUM_PLANE].normal = (vec3_t) { -cos_half_fov, 0, sin_half_fov };
+    frustum_planes[RIGHT_FRUSTUM_PLANE].normal = (vec3_t) { -cos_half_fovx, 0, sin_half_fovx };
 
     frustum_planes[TOP_FRUSTUM_PLANE].point = (vec3_t) { 0 };
-    frustum_planes[TOP_FRUSTUM_PLANE].normal = (vec3_t) { 0, -cos_half_fov, sin_half_fov };
+    frustum_planes[TOP_FRUSTUM_PLANE].normal = (vec3_t) { 0, -cos_half_fovy, sin_half_fovy };
 
     frustum_planes[BOTTOM_FRUSTUM_PLANE].point = (vec3_t) { 0 };
-    frustum_planes[BOTTOM_FRUSTUM_PLANE].normal = (vec3_t) { 0, cos_half_fov, sin_half_fov };
+    frustum_planes[BOTTOM_FRUSTUM_PLANE].normal = (vec3_t) { 0, cos_half_fovy, sin_half_fovy };
 
     frustum_planes[NEAR_FRUSTUM_PLANE].point = (vec3_t) { 0, 0, znear };
     frustum_planes[NEAR_FRUSTUM_PLANE].normal = (vec3_t) { 0, 0, 1 };
@@ -32,12 +34,27 @@ void init_frustum_planes(const float fov, const float znear, const float zfar)
     frustum_planes[FAR_FRUSTUM_PLANE].normal = (vec3_t) { 0, 0, -1 };
 }
 
-polygon_t create_poly_from_triangle(const vec3_t v0, const vec3_t v1, const vec3_t v2)
+polygon_t poly_from_triangle(const vec3_t v0, const vec3_t v1, const vec3_t v2)
 {
     return (polygon_t) {
         .vertices = { v0, v1, v2 },
         .num_vertices = 3,
     };
+}
+
+size_t triangles_from_poly(const polygon_t *polygon, triangle_t *triangles)
+{
+    size_t idx0 = 0;
+    size_t idx1 = 0;
+    size_t idx2 = 0;
+    for (size_t i = 0; i < (size_t)polygon->num_vertices - 2; i++) {
+        idx1 = i + 1;
+        idx2 = i + 2;
+        triangles[i].points[0] = vec4_from_vec3(polygon->vertices[idx0]);
+        triangles[i].points[1] = vec4_from_vec3(polygon->vertices[idx1]);
+        triangles[i].points[2] = vec4_from_vec3(polygon->vertices[idx2]);
+    }
+    return polygon->num_vertices - 2;
 }
 
 void clip_polygon_against_plane(polygon_t *polygon, const int plane)
