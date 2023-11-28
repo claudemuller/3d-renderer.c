@@ -42,12 +42,12 @@ polygon_t poly_from_triangle(const vec3_t v0, const vec3_t v1, const vec3_t v2)
     };
 }
 
-size_t triangles_from_poly(const polygon_t *polygon, triangle_t *triangles)
+int triangles_from_poly(const polygon_t *polygon, triangle_t *triangles)
 {
-    size_t idx0 = 0;
-    size_t idx1 = 0;
-    size_t idx2 = 0;
-    for (size_t i = 0; i < (size_t)polygon->num_vertices - 2; i++) {
+    const int idx0 = 0;
+    int idx1 = 0;
+    int idx2 = 0;
+    for (int i = 0; i < polygon->num_vertices - 2; i++) {
         idx1 = i + 1;
         idx2 = i + 2;
         triangles[i].points[0] = vec4_from_vec3(polygon->vertices[idx0]);

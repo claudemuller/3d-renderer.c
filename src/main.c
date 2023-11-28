@@ -315,9 +315,9 @@ void update(void)
 
         // Break clipped polygon back into triangles
         triangle_t triangles[MAX_TRIANGLES_PER_POLY] = { 0 };
-        size_t num_triangles = triangles_from_poly(&polygon, triangles);
+        int num_triangles = triangles_from_poly(&polygon, triangles);
 
-        for (size_t t = 0; t < num_triangles; t++) {
+        for (int t = 0; t < num_triangles; t++) {
             triangle_t triangle = triangles[t];
 
             // Project into screen space

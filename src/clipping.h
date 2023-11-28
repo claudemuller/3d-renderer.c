@@ -28,7 +28,7 @@ typedef struct {
 
 void init_frustum_planes(const float fovx, const float fovy, const float znear, const float zfar);
 polygon_t poly_from_triangle(const vec3_t v0, const vec3_t v1, const vec3_t v2);
-size_t triangles_from_poly(const polygon_t *polygon, triangle_t *triangles);
+int triangles_from_poly(const polygon_t *polygon, triangle_t *triangles);
 void clip_polygon_against_plane(polygon_t *polygon, const int plane);
 void clip_polygon(polygon_t *polygon);
 
