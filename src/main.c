@@ -82,8 +82,8 @@ bool setup(void)
 
     init_frustum_planes(fovx, fovy, znear, zfar);
 
-    load_mesh("./assets/f22.obj", "./assets/f22.png", (vec3_t) { 1, 1, 1 }, (vec3_t) { -3, 0, 0 }, (vec3_t) { 0 });
-    load_mesh("./assets/efa.obj", "./assets/efa.png", (vec3_t) { 1, 1, 1 }, (vec3_t) { 3, 0, 0 }, (vec3_t) { 0 });
+    load_mesh("./assets/f22.obj", "./assets/f22.png", (vec3_t) { 1, 1, 1 }, (vec3_t) { -3, 0, 8 }, (vec3_t) { 0 });
+    load_mesh("./assets/efa.obj", "./assets/efa.png", (vec3_t) { 1, 1, 1 }, (vec3_t) { 3, 0, 8 }, (vec3_t) { 0 });
 
     return true;
 }
@@ -183,10 +183,10 @@ void update(void)
         mesh_t *mesh = get_mesh(mesh_idx);
 
         // Change the mesh scale/rotation/translation with matrix
-        // mesh.rotation.x += 0.6 * delta_time;
-        // mesh.rotation.y += 0.6 * delta_time;
-        // mesh.rotation.z += 0.6 * delta_time;
-        mesh->translation.z = 5.0;
+        mesh->rotation.x += 0.6 * delta_time;
+        mesh->rotation.y += 0.6 * delta_time;
+        mesh->rotation.z += 0.6 * delta_time;
+        // mesh->translation.z = 5.0;
 
         // Create view matrix looking
         vec3_t target = get_camera_lookat_target();
@@ -326,7 +326,8 @@ void update(void)
                         { triangle.texcoords[1].u, triangle.texcoords[1].v },
                         { triangle.texcoords[2].u, triangle.texcoords[2].v },
                     },
-                    .colour = mesh_face.colour
+                    .colour = mesh_face.colour,
+                    .texture = mesh->texture
                 };
 
                 if (num_triangles_to_render < MAX_TRIANGLES_PER_MESH) {
@@ -358,12 +359,12 @@ void render(void)
 
         if (should_render_texture_triangles()) {
             // TODO: way too many args - fix 🤮
-            // draw_textured_triangle(
-            //     triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].u, triangle.texcoords[0].v,
-            //     triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].u, triangle.texcoords[1].v,
-            //     triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].u, triangle.texcoords[2].v,
-            //     mesh_texture
-            // );
+            draw_textured_triangle(
+                triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].u, triangle.texcoords[0].v,
+                triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].u, triangle.texcoords[1].v,
+                triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].u, triangle.texcoords[2].v,
+                triangle.texture
+            );
         }
 
         if (should_render_wireframe_triangles()) {

@@ -2,8 +2,10 @@
 #include "display.h"
 #include "texture.h"
 #include "triangle.h"
+#include "upng.h"
 #include "vector.h"
 #include <stddef.h>
+#include <stdint.h>
 
 #define SWAP(a, b) _Generic((a), int *: int_swap, float *: float_swap)(a, b)
 
@@ -184,7 +186,7 @@ void draw_triangle_pixel(
 
 void draw_triangle_texel(
     const int x, const int y,
-    const uint32_t *texture,
+    const upng_t *texture,
     const vec4_t point_a, const vec4_t point_b, const vec4_t point_c,
     const tex2_t a_uv, const tex2_t b_uv, const tex2_t c_uv
 )
@@ -210,27 +212,32 @@ void draw_triangle_texel(
     interpolated_u /= interpolated_reciprocal_w;
     interpolated_v /= interpolated_reciprocal_w;
 
+    const int texture_width = upng_get_width(texture);
+    const int texture_height = upng_get_height(texture);
+
     // Map UV coords to texture width and height
-    // const int tex_x = abs((int)(interpolated_u * texture_width) % texture_width); // Clamp value within tex width
-    // const int tex_y = abs((int)(interpolated_v * texture_width) % texture_height); // Clamp value within tex height
+    const int tex_x = abs((int)(interpolated_u * texture_width) % texture_width); // Clamp value within tex width
+    const int tex_y = abs((int)(interpolated_v * texture_width) % texture_height); // Clamp value within tex height
 
     // Adjust 1/w so that pixels closer to camera are smaller than those behind
-    // interpolated_reciprocal_w = 1.0 - interpolated_reciprocal_w;
+    interpolated_reciprocal_w = 1.0 - interpolated_reciprocal_w;
 
     // Only draw pixel if depth value is less than what was already in z_buf
-    // if (interpolated_reciprocal_w < get_zbuf_at(x, y)) {
-    //     draw_pixel(x, y, texture[(texture_width * tex_y) + tex_x]);
+    if (interpolated_reciprocal_w < get_zbuf_at(x, y)) {
+        const uint32_t *texture_buffer = (uint32_t *)upng_get_buffer(texture);
 
-    //     // Update z_buf with the 1/w of current pixel
-    //     update_zbuf_at(x, y, interpolated_reciprocal_w);
-    // }
+        draw_pixel(x, y, texture_buffer[(texture_width * tex_y) + tex_x]);
+
+        // Update z_buf with the 1/w of current pixel
+        update_zbuf_at(x, y, interpolated_reciprocal_w);
+    }
 }
 
 void draw_textured_triangle(
     int x0, int y0, float z0, float w0, float u0, float v0,
     int x1, int y1, float z1, float w1, float u1, float v1,
     int x2, int y2, float z2, float w2, float u2, float v2,
-    const uint32_t *texture
+    const upng_t *texture
 )
 {
     // Sort vertices by y-coord asc (y0 < y1 < y2)
