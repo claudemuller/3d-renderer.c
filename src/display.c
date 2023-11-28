@@ -254,12 +254,12 @@ void render_ui(SDL_Renderer *renderer)
         "<6> - textured wire",
         "<c> - cull backface",
         "<x> - cull none",
-        "<w> - forward",
-        "<s> - backwards",
+        "<w> - pitch up",
+        "<s> - pitch down",
         "<a> - turn left",
         "<d> - turn right",
-        "<up> - up",
-        "<down> - down",
+        "<up> - forward",
+        "<down> - backward",
         "<esc> - quit"
     };
     SDL_Color white = { 62, 81, 100, 255 };
