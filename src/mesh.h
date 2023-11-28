@@ -1,5 +1,5 @@
-#ifndef MESH_H
-#define MESH_H
+#ifndef MESH_H_
+#define MESH_H_
 
 #include "vector.h"
 #include "triangle.h"
@@ -28,4 +28,4 @@ int get_num_meshes(void);
 mesh_t *get_mesh(const int idx);
 void free_meshes(void);
 
-#endif // MESH_H
+#endif // MESH_H_

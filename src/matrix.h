@@ -1,5 +1,5 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#ifndef MATRIX_H_
+#define MATRIX_H_
 
 #include "vector.h"
 typedef struct {
@@ -19,4 +19,4 @@ mat4_t mat4_mul_mat4(const mat4_t m1, const mat4_t m2);
 vec4_t mat4_mul_vec4_project(const mat4_t mat4_proj, const vec4_t v);
 mat4_t mat4_look_at(const vec3_t eye, const vec3_t target, const vec3_t up);
 
-#endif // MATRIX_H
+#endif // MATRIX_H_

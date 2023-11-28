@@ -1,5 +1,5 @@
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef ARRAY_H_
+#define ARRAY_H_
 
 #define array_push(array, value)                                              \
     do {                                                                      \
@@ -11,4 +11,4 @@ void* array_hold(void* array, int count, int item_size);
 int array_length(void* array);
 void array_free(void* array);
 
-#endif
+#endif // ARRAY_H_
