@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 
 bool setup(void)
 {
-    set_render_method(RENDER_FILL_TRIANGLE);
+    set_render_method(RENDER_TEXTURED);
     set_cull_method(CULL_BACKFACE);
 
     // Init perspective projection matrix
@@ -81,9 +81,9 @@ bool setup(void)
     init_frustum_planes(fovx, fovy, znear, zfar);
 
     // load_cube_mesh_data();
-    load_obj("./assets/cube.obj");
+    load_obj("./assets/f22.obj");
 
-    load_png_texture_data("./assets/cube.png");
+    load_png_texture_data("./assets/f22.png");
 
     return true;
 }
@@ -189,9 +189,9 @@ void update(void)
     num_triangles_to_render = 0;
 
     // Change the mesh scale/rotation/translation with matrix
-    // mesh.rotation.x += 0.6 * delta_time;
-    // mesh.rotation.y += 0.6 * delta_time;
-    // mesh.rotation.z += 0.6 * delta_time;
+    mesh.rotation.x += 0.6 * delta_time;
+    mesh.rotation.y += 0.6 * delta_time;
+    mesh.rotation.z += 0.6 * delta_time;
     mesh.translation.z = 5.0;
 
     // Create view matrix looking

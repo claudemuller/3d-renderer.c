@@ -89,15 +89,19 @@ bool init_win(const bool debug)
 
     SDL_DisplayMode display_mode;
     SDL_GetCurrentDisplayMode(0, &display_mode);
-    win_width = display_mode.w;
-    win_height = display_mode.h;
+    const int fullscreen_width = display_mode.w;
+    const int fullscreen_height = display_mode.h;
+
+    // "Downscale" pixels to simulate low resolution
+    win_width = fullscreen_width / 1;
+    win_height = fullscreen_height / 1;
 
     window = SDL_CreateWindow(
         "3d Renderer",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        win_width,
-        win_height,
+        fullscreen_width,
+        fullscreen_height,
         SDL_WINDOW_BORDERLESS
     );
     if (!window) {
