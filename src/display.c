@@ -235,7 +235,7 @@ void draw_grid(void)
     }
 }
 
-#define UI_LEN 16
+#define UI_LEN 15
 
 void render_ui(SDL_Renderer *renderer)
 {
@@ -250,9 +250,8 @@ void render_ui(SDL_Renderer *renderer)
         "<2> - wire vertex",
         "<3> - fill triangle",
         "<4> - fill triangle wire",
-        "<5> - turn on lighting",
-        "<6> - textured",
-        "<7> - textured wire",
+        "<5> - textured",
+        "<6> - textured wire",
         "<c> - cull backface",
         "<x> - cull none",
         "<w> - forward",
@@ -295,37 +294,31 @@ void render_ui(SDL_Renderer *renderer)
         draw_text(renderer, font, ui[3], 15, 15 * 3 + 10, white);
     }
 
-    if (lighting) {
+    if (render_method == RENDER_TEXTURED) {
         draw_text(renderer, font, ui[4], 15, 15 * 4 + 10, green);
     } else {
         draw_text(renderer, font, ui[4], 15, 15 * 4 + 10, white);
     }
 
-    if (render_method == RENDER_TEXTURED) {
+    if (render_method == RENDER_TEXTURED_WIRE) {
         draw_text(renderer, font, ui[5], 15, 15 * 5 + 10, green);
     } else {
         draw_text(renderer, font, ui[5], 15, 15 * 5 + 10, white);
     }
 
-    if (render_method == RENDER_TEXTURED_WIRE) {
+    if (cull_method == CULL_BACKFACE) {
         draw_text(renderer, font, ui[6], 15, 15 * 6 + 10, green);
     } else {
         draw_text(renderer, font, ui[6], 15, 15 * 6 + 10, white);
     }
 
-    if (cull_method == CULL_BACKFACE) {
+    if (cull_method == CULL_NONE) {
         draw_text(renderer, font, ui[7], 15, 15 * 7 + 10, green);
     } else {
         draw_text(renderer, font, ui[7], 15, 15 * 7 + 10, white);
     }
 
-    if (cull_method == CULL_NONE) {
-        draw_text(renderer, font, ui[8], 15, 15 * 8 + 10, green);
-    } else {
-        draw_text(renderer, font, ui[8], 15, 15 * 8 + 10, white);
-    }
-
-    for (size_t i = 9; i < UI_LEN; i++) {
+    for (size_t i = 8; i < UI_LEN; i++) {
         draw_text(renderer, font, ui[i], 15, 15 * i + 10, white);
     }
 

@@ -69,6 +69,8 @@ bool setup(void)
     set_render_method(RENDER_TEXTURED);
     set_cull_method(CULL_BACKFACE);
 
+    init_light((vec3_t) { 0, 0, 1 });
+
     // Init perspective projection matrix
     const float aspectx = get_win_width() / (float)get_win_height();
     const float aspecty = get_win_height() / (float)get_win_width();
@@ -105,12 +107,10 @@ void process_input(void)
 
             case SDLK_1: {
                 set_render_method(RENDER_WIRE);
-                lighting = false;
             } break;
 
             case SDLK_2: {
                 set_render_method(RENDER_WIRE_VERTEX);
-                lighting = false;
             } break;
 
             case SDLK_3: {
@@ -122,18 +122,11 @@ void process_input(void)
             } break;
 
             case SDLK_5: {
-                set_render_method(RENDER_FILL_TRIANGLE);
-                lighting = true;
+                set_render_method(RENDER_TEXTURED);
             } break;
 
             case SDLK_6: {
-                set_render_method(RENDER_TEXTURED);
-                lighting = true;
-            } break;
-
-            case SDLK_7: {
                 set_render_method(RENDER_TEXTURED_WIRE);
-                lighting = true;
             } break;
 
             case SDLK_c: {
@@ -320,11 +313,9 @@ void update(void)
                 projected_points[j].y += get_win_height() / 2.0;
             }
 
-            if (lighting) {
                 // Calculate light intensity based on face normal relation to light direction
-                float light_intensity_factor = -vec3_dot(normal, light.direction);
-                mesh_face.colour = light_apply_intensity(mesh_face.colour, light_intensity_factor);
-            }
+            float light_intensity_factor = -vec3_dot(normal, get_light_direction());
+            mesh_face.colour = light_apply_intensity(mesh_face.colour, light_intensity_factor);
 
             triangle_t triangle_to_render = {
                 .points = {

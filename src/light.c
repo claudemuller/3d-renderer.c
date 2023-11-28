@@ -1,11 +1,17 @@
 #include "light.h"
 #include <math.h>
 
-bool lighting = false;
+static light_t light;
 
-light_t light = {
-    .direction = { 0, 0, 1 }
-};
+void init_light(const vec3_t direction)
+{
+    light.direction = direction;
+}
+
+vec3_t get_light_direction(void)
+{
+    return light.direction;
+}
 
 uint32_t light_apply_intensity(const uint32_t col, float factor)
 {
