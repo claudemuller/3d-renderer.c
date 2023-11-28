@@ -3,25 +3,29 @@
 
 #include "vector.h"
 #include "triangle.h"
+#include "upng.h"
 #include <stdbool.h>
-
-#define NUM_CUBE_VERTICES 8
-#define NUM_CUBE_FACES (6 * 2)
-
-extern face_t cube_faces[NUM_CUBE_FACES];
-extern vec3_t cube_vertices[NUM_CUBE_VERTICES];
 
 typedef struct {
   vec3_t *vertices;
   face_t *faces;
+  upng_t *texture;
   vec3_t rotation;
   vec3_t scale;
   vec3_t translation;
 } mesh_t;
 
-extern mesh_t mesh;
-
-void load_cube_mesh_data(void);
-bool load_obj(const char *filename);
+bool load_mesh_obj_data(mesh_t *mesh, const char *filename);
+bool load_mesh_png_data(mesh_t *mesh, const char *filename);
+void load_mesh(
+  const char *obj_filename,
+  const char *png_filename,
+  const vec3_t scale,
+  const vec3_t translation,
+  const vec3_t rotation
+);
+int get_num_meshes(void);
+mesh_t *get_mesh(const int idx);
+void free_meshes(void);
 
 #endif // MESH_H

@@ -211,19 +211,19 @@ void draw_triangle_texel(
     interpolated_v /= interpolated_reciprocal_w;
 
     // Map UV coords to texture width and height
-    const int tex_x = abs((int)(interpolated_u * texture_width) % texture_width); // Clamp value within tex width
-    const int tex_y = abs((int)(interpolated_v * texture_width) % texture_height); // Clamp value within tex height
+    // const int tex_x = abs((int)(interpolated_u * texture_width) % texture_width); // Clamp value within tex width
+    // const int tex_y = abs((int)(interpolated_v * texture_width) % texture_height); // Clamp value within tex height
 
     // Adjust 1/w so that pixels closer to camera are smaller than those behind
-    interpolated_reciprocal_w = 1.0 - interpolated_reciprocal_w;
+    // interpolated_reciprocal_w = 1.0 - interpolated_reciprocal_w;
 
     // Only draw pixel if depth value is less than what was already in z_buf
-    if (interpolated_reciprocal_w < get_zbuf_at(x, y)) {
-        draw_pixel(x, y, texture[(texture_width * tex_y) + tex_x]);
+    // if (interpolated_reciprocal_w < get_zbuf_at(x, y)) {
+    //     draw_pixel(x, y, texture[(texture_width * tex_y) + tex_x]);
 
-        // Update z_buf with the 1/w of current pixel
-        update_zbuf_at(x, y, interpolated_reciprocal_w);
-    }
+    //     // Update z_buf with the 1/w of current pixel
+    //     update_zbuf_at(x, y, interpolated_reciprocal_w);
+    // }
 }
 
 void draw_textured_triangle(

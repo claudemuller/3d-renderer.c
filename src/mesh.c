@@ -9,60 +9,54 @@
 #include <string.h>
 #include <sys/types.h>
 
-mesh_t mesh = {
-    .vertices = NULL,
-    .faces = NULL,
-    .rotation = { 0, 0, 0 },
-    .scale = { 1.0, 1.0, 1.0 },
-    .translation = { 0, 0, 0 },
-};
+#define MAX_NUM_MESHES 10
 
-vec3_t cube_vertices[NUM_CUBE_VERTICES] = {
-    { .x = -1, .y = -1, .z = -1 }, // 1
-    { .x = -1, .y = 1, .z = -1 }, // 2
-    { .x = 1, .y = 1, .z = -1 }, // 3
-    { .x = 1, .y = -1, .z = -1 }, // 4
-    { .x = 1, .y = 1, .z = 1 }, // 5
-    { .x = 1, .y = -1, .z = 1 }, // 6
-    { .x = -1, .y = 1, .z = 1 }, // 7
-    { .x = -1, .y = -1, .z = 1 }, // 8
-};
+static mesh_t meshes[MAX_NUM_MESHES];
+static int mesh_count = 0;
 
-face_t cube_faces[NUM_CUBE_FACES] = {
-    // Cube front face of two triangle faces
-    { .a = 1, .b = 2, .c = 3, .a_uv = { 0, 1 }, .b_uv = { 0, 0 }, .c_uv = { 1, 0 }, .colour = 0xFFFFFFFF },
-    { .a = 1, .b = 3, .c = 4, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .colour = 0xFFFFFFFF },
-    // Cube right face of two triangle faces
-    { .a = 4, .b = 3, .c = 5, .a_uv = { 0, 1 }, .b_uv = { 0, 0 }, .c_uv = { 1, 0 }, .colour = 0xFFFFFFFF },
-    { .a = 4, .b = 5, .c = 6, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .colour = 0xFFFFFFFF },
-    // Cube back face of two triangle faces
-    { .a = 6, .b = 5, .c = 7, .a_uv = { 0, 1 }, .b_uv = { 0, 0 }, .c_uv = { 1, 0 }, .colour = 0xFFFFFFFF },
-    { .a = 6, .b = 7, .c = 8, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .colour = 0xFFFFFFFF },
-    // Cube left face of two triangle faces
-    { .a = 8, .b = 7, .c = 2, .a_uv = { 0, 1 }, .b_uv = { 0, 0 }, .c_uv = { 1, 0 }, .colour = 0xFFFFFFFF },
-    { .a = 8, .b = 2, .c = 1, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .colour = 0xFFFFFFFF },
-    // Cube top face of two triangle faces
-    { .a = 2, .b = 7, .c = 5, .a_uv = { 0, 1 }, .b_uv = { 0, 0 }, .c_uv = { 1, 0 }, .colour = 0xFFFFFFFF },
-    { .a = 2, .b = 5, .c = 3, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .colour = 0xFFFFFFFF },
-    // Cube bottom face of two triangle faces
-    { .a = 6, .b = 8, .c = 1, .a_uv = { 0, 1 }, .b_uv = { 0, 0 }, .c_uv = { 1, 0 }, .colour = 0xFFFFFFFF },
-    { .a = 6, .b = 1, .c = 4, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .colour = 0xFFFFFFFF }
-};
-
-void load_cube_mesh_data(void)
+void load_mesh(
+    const char *obj_filename,
+    const char *png_filename,
+    const vec3_t scale,
+    const vec3_t translation,
+    const vec3_t rotation
+)
 {
-    for (size_t i = 0; i < NUM_CUBE_VERTICES; i++) {
-        vec3_t cube_vertex = cube_vertices[i];
-        array_push(mesh.vertices, cube_vertex);
+    if (!load_mesh_obj_data(&meshes[mesh_count], obj_filename)) {
+        // tODO: handle error
     }
 
-    for (size_t i = 0; i < NUM_CUBE_FACES; i++) {
-        face_t cube_face = cube_faces[i];
-        array_push(mesh.faces, cube_face);
+    if (!load_mesh_png_data(&meshes[mesh_count], png_filename)) {
+        // tODO: handle error
     }
+
+    meshes[mesh_count].scale = scale;
+    meshes[mesh_count].translation = translation;
+    meshes[mesh_count].rotation = rotation;
+
+    mesh_count++;
 }
 
-bool load_obj(const char *filename)
+bool load_mesh_png_data(mesh_t *mesh, const char *filename)
+{
+    upng_t *png_image = upng_new_from_file(filename);
+    if (!png_image) {
+        fprintf(stderr, "error loading .png\n");
+        return false;
+    }
+
+    upng_decode(png_image);
+    if (upng_get_error(png_image) != UPNG_EOK) {
+        fprintf(stderr, "error decoding .png\n");
+        return false;
+    }
+
+    mesh->texture = png_image;
+
+    return true;
+}
+
+bool load_mesh_obj_data(mesh_t *mesh, const char *filename)
 {
     // Open file
     FILE *fp = fopen(filename, "r");
@@ -80,7 +74,7 @@ bool load_obj(const char *filename)
         if (strncmp(line, "v ", 2) == 0) {
             vec3_t vertex;
             sscanf(line, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
-            array_push(mesh.vertices, vertex);
+            array_push(mesh->vertices, vertex);
         }
 
         if (strncmp(line, "vt ", 3) == 0) {
@@ -108,7 +102,7 @@ bool load_obj(const char *filename)
                 .c_uv = texcoords[texture_indices[2] - 1],
                 .colour = 0xFFFFFFFF,
             };
-            array_push(mesh.faces, face);
+            array_push(mesh->faces, face);
         }
     }
 
@@ -117,4 +111,23 @@ bool load_obj(const char *filename)
     free(line);
 
     return true;
+}
+
+mesh_t *get_mesh(const int idx)
+{
+    return &meshes[idx];
+}
+
+int get_num_meshes(void)
+{
+    return mesh_count;
+}
+
+void free_meshes(void)
+{
+    for (int i = 0; i < mesh_count; i++) {
+        upng_free(meshes[i].texture);
+        array_free(meshes[i].faces);
+        array_free(meshes[i].vertices);
+    }
 }
