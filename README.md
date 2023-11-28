@@ -4,6 +4,8 @@
 
 A software 3D renderer written in C and SDL using the left-handed co-ordinate system.
 
+![3drenderer](screenshot.png)
+
 ## Requirements
 
 - [gcc](https://gcc.gnu.org/)

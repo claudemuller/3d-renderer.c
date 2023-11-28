@@ -84,6 +84,7 @@ bool setup(void)
     init_frustum_planes(fovx, fovy, znear, zfar);
 
     // Rotation should be in radians e.g. M_PI/2 = 90deg
+    // load_mesh("./assets/f22.obj", "./assets/f22.png", (vec3_t) { 1, 1, 1 }, (vec3_t) { 0, 0, 4 }, (vec3_t) { M_PI / 6, M_PI / 6, 0 });
     load_mesh("./assets/f22.obj", "./assets/f22.png", (vec3_t) { 1, 1, 1 }, (vec3_t) { -3, 0, 8 }, (vec3_t) { 0 });
     load_mesh("./assets/efa.obj", "./assets/efa.png", (vec3_t) { 1, 1, 1 }, (vec3_t) { 3, 0, 8 }, (vec3_t) { 0 });
 
@@ -345,9 +346,9 @@ void update(void)
         mesh_t *mesh = get_mesh(mesh_idx);
 
         // Change the mesh scale/rotation/translation with matrix
-        mesh->rotation.x += 0.6 * delta_time;
-        mesh->rotation.y += 0.6 * delta_time;
-        mesh->rotation.z += 0.6 * delta_time;
+        // mesh->rotation.x += 0.6 * delta_time;
+        // mesh->rotation.y += 0.6 * delta_time;
+        // mesh->rotation.z += 0.6 * delta_time;
         // mesh->translation.z = 5.0;
 
         process_graphics_pipeline_stages(mesh);
