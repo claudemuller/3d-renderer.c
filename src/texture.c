@@ -7,6 +7,14 @@ int texture_width = 64;
 int texture_height = 64;
 upng_t *png_texture = NULL;
 
+tex2_t tex2_clone(tex2_t *t)
+{
+    return (tex2_t) {
+        .u = t->u,
+        .v = t->v,
+    };
+}
+
 void load_png_texture_data(const char *filename)
 {
     png_texture = upng_new_from_file(filename);

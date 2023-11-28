@@ -14,6 +14,7 @@ extern int texture_height;
 extern uint32_t* mesh_texture;
 extern upng_t *png_texture;
 
+tex2_t tex2_clone(tex2_t *tex);
 void load_png_texture_data(const char *filename);
 
 #endif // TEXTURE_H_
