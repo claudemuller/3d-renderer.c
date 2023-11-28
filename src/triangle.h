@@ -63,5 +63,6 @@ void fill_flat_top_triangle(
     const int x2, const int y2,
     uint32_t colour
 );
+vec3_t get_triangle_normal(vec4_t vertices[NUM_TRIANGLE_VERTICES]);
 
 #endif // TRIANGLE_H_

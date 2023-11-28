@@ -332,3 +332,26 @@ void draw_textured_triangle(
         }
     }
 }
+
+vec3_t get_triangle_normal(vec4_t vertices[NUM_TRIANGLE_VERTICES])
+{
+            // Check which faces need to be culled
+    vec3_t vec_a = vec3_from_vec4(vertices[0]); /*   A   */
+    vec3_t vec_b = vec3_from_vec4(vertices[1]); /*  / \  */
+    vec3_t vec_c = vec3_from_vec4(vertices[2]); /* C---B */
+
+            // Do vec subtraction of B-A and C-A
+    vec3_t vec_ab = vec3_sub(vec_b, vec_a);
+    vec3_t vec_ac = vec3_sub(vec_c, vec_a);
+
+    vec3_normalise(&vec_ab);
+    vec3_normalise(&vec_ac);
+
+            // Find the vector between vertex A in the triangle and the camera origin
+    vec3_t normal = vec3_cross(vec_ab, vec_ac);
+
+            // Normalise the face normal vector i.e. turn it into a unit vector
+    vec3_normalise(&normal);
+
+    return normal;
+}

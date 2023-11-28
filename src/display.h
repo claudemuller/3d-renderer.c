@@ -31,7 +31,7 @@ int get_win_height(void);
 void set_render_method(const int rm);
 void set_cull_method(const int cm);
 
-bool is_cull_backface(void);
+bool should_cull_backface(void);
 bool should_render_filled_triangles(void);
 bool should_render_texture_triangles(void);
 bool should_render_wireframe_triangles(void);
