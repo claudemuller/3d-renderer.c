@@ -1,25 +1,84 @@
-#include "SDL_pixels.h"
-#include "SDL_render.h"
 #include "SDL_ttf.h"
 #include "display.h"
 #include "light.h"
 #include "triangle.h"
 
-enum cull_method cull_method;
-enum render_method render_method;
+static enum cull_method cull_method = 0;
+static enum render_method render_method = 0;
 
-float rot = 0.01;
-bool is_paused = false;
+static int win_width = 800;
+static int win_height = 600;
 
-int win_width = 800;
-int win_height = 600;
+static SDL_Window *window = NULL;
+static SDL_Renderer *renderer = NULL;
 
-SDL_Window *window = NULL;
-SDL_Renderer *renderer = NULL;
+static uint32_t *colour_buf = NULL;
+static SDL_Texture *colour_buf_tex = NULL;
+static float *zbuf = NULL;
 
-uint32_t *colour_buf = NULL;
-SDL_Texture *colour_buf_tex = NULL;
-float *z_buf = NULL;
+int get_win_width(void)
+{
+    return win_width;
+}
+
+int get_win_height(void)
+{
+    return win_height;
+}
+
+float get_zbuf_at(const int x, const int y)
+{
+    if (x < 0 || x >= win_width || y < 0 || y >= win_height) {
+        return 1.0;
+    }
+    return zbuf[(win_width * y) + x];
+}
+
+void update_zbuf_at(const int x, const int y, float value)
+{
+    if (x < 0 || x >= win_width || y < 0 || y >= win_height) {
+        return;
+    }
+    zbuf[(win_width * y) + x] = value;
+}
+
+void set_render_method(const int rm)
+{
+    render_method = rm;
+}
+
+void set_cull_method(const int cm)
+{
+    cull_method = cm;
+}
+
+bool is_cull_backface(void)
+{
+    return cull_method == CULL_BACKFACE;
+}
+
+bool should_render_filled_triangles(void)
+{
+    return render_method == RENDER_FILL_TRIANGLE || render_method == RENDER_FILL_TRIANGLE_WIRE;
+}
+
+bool should_render_texture_triangles(void)
+{
+    return render_method == RENDER_TEXTURED || render_method == RENDER_TEXTURED_WIRE;
+}
+
+bool should_render_vertices(void)
+{
+    return render_method == RENDER_WIRE_VERTEX;
+}
+
+bool should_render_wireframe_triangles(void)
+{
+    return render_method == RENDER_WIRE
+        || render_method == RENDER_FILL_TRIANGLE_WIRE
+        || render_method == RENDER_WIRE_VERTEX
+        || render_method == RENDER_TEXTURED_WIRE;
+}
 
 bool init_win(const bool debug)
 {
@@ -55,6 +114,30 @@ bool init_win(const bool debug)
         return false;
     }
 
+    colour_buf = (uint32_t *)malloc(sizeof(uint32_t) * win_width * win_height);
+    if (!colour_buf) {
+        fprintf(stderr, "error allocating colour buffer\n");
+        return false;
+    }
+
+    zbuf = (float *)malloc(sizeof(float) * win_width * win_height);
+    if (!zbuf) {
+        fprintf(stderr, "error allocating z buffer\n");
+        return false;
+    }
+
+    colour_buf_tex = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_RGBA32,
+        SDL_TEXTUREACCESS_STREAMING,
+        win_width,
+        win_height
+    );
+    if (!colour_buf_tex) {
+        fprintf(stderr, "error creating colour buffer texture: %s\n", SDL_GetError());
+        return false;
+    }
+
     TTF_Init();
 
     if (!debug) {
@@ -66,20 +149,23 @@ bool init_win(const bool debug)
 
 void clear_colour_buf(const uint32_t colour)
 {
-    for (size_t y = 0; y < (size_t)win_height; y++) {
-        for (size_t x = 0; x < (size_t)win_width; x++) {
-            colour_buf[(win_width * y) + x] = colour;
-        }
+    for (size_t i = 0; i < (size_t)win_height * win_width; i++) {
+        colour_buf[i] = colour;
     }
 }
 
-void clear_z_buf(void)
+void clear_zbuf(void)
 {
-    for (size_t y = 0; y < (size_t)win_height; y++) {
-        for (size_t x = 0; x < (size_t)win_width; x++) {
-            z_buf[(win_width * y) + x] = 1.0;
-        }
+    for (size_t i = 0; i < (size_t)win_height * win_width; i++) {
+        zbuf[i] = 1.0;
     }
+}
+
+void render_display(void)
+{
+    render_colour_buf();
+    render_ui(renderer);
+    SDL_RenderPresent(renderer);
 }
 
 void render_colour_buf(void)
@@ -95,9 +181,10 @@ void render_colour_buf(void)
 
 void draw_pixel(const int x, const int y, const uint32_t colour)
 {
-    if (x >= 0 && x < win_width && y >= 0 && y < win_height) {
-        colour_buf[(win_width * y) + x] = colour;
+    if (x < 0 || x >= win_width || y < 0 || y >= win_height) {
+        return;
     }
+    colour_buf[(win_width * y) + x] = colour;
 }
 
 void draw_line(const int x0, const int y0, const int x1, const int y1, const uint32_t colour)
@@ -144,9 +231,9 @@ void draw_grid(void)
     }
 }
 
-#define UI_LEN 17
+#define UI_LEN 16
 
-void draw_ui(SDL_Renderer *renderer)
+void render_ui(SDL_Renderer *renderer)
 {
     int font_size = 12;
     TTF_Font *font = TTF_OpenFont("./assets/fonts/FiraCode-Regular.ttf", font_size);
@@ -164,7 +251,6 @@ void draw_ui(SDL_Renderer *renderer)
         "<7> - textured wire",
         "<c> - cull backface",
         "<x> - cull none",
-        "<p> - pause",
         "<w> - forward",
         "<s> - backwards",
         "<a> - turn left",
@@ -235,13 +321,7 @@ void draw_ui(SDL_Renderer *renderer)
         draw_text(renderer, font, ui[8], 15, 15 * 8 + 10, white);
     }
 
-    if (is_paused) {
-        draw_text(renderer, font, ui[9], 15, 15 * 9 + 10, green);
-    } else {
-        draw_text(renderer, font, ui[9], 15, 15 * 9 + 10, white);
-    }
-
-    for (size_t i = 10; i < UI_LEN; i++) {
+    for (size_t i = 9; i < UI_LEN; i++) {
         draw_text(renderer, font, ui[i], 15, 15 * i + 10, white);
     }
 
@@ -282,6 +362,8 @@ void draw_text(
 
 void cleanup(void)
 {
+    free(colour_buf);
+    free(zbuf);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

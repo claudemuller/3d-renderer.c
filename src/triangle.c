@@ -174,11 +174,11 @@ void draw_triangle_pixel(
     interpolated_reciprocal_w = 1.0 - interpolated_reciprocal_w;
 
     // Only draw pixel if depth value is less than what was already in z_buf
-    if (interpolated_reciprocal_w < z_buf[(win_width * y) + x]) {
+    if (interpolated_reciprocal_w < get_zbuf_at(x, y)) {
         draw_pixel(x, y, colour);
 
         // Update z_buf with the 1/w of current pixel
-        z_buf[(win_width * y) + x] = interpolated_reciprocal_w;
+        update_zbuf_at(x, y, interpolated_reciprocal_w);
     }
 }
 
@@ -218,11 +218,11 @@ void draw_triangle_texel(
     interpolated_reciprocal_w = 1.0 - interpolated_reciprocal_w;
 
     // Only draw pixel if depth value is less than what was already in z_buf
-    if (interpolated_reciprocal_w < z_buf[(win_width * y) + x]) {
+    if (interpolated_reciprocal_w < get_zbuf_at(x, y)) {
         draw_pixel(x, y, texture[(texture_width * tex_y) + tex_x]);
 
         // Update z_buf with the 1/w of current pixel
-        z_buf[(win_width * y) + x] = interpolated_reciprocal_w;
+        update_zbuf_at(x, y, interpolated_reciprocal_w);
     }
 }
 
