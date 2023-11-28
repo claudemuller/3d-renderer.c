@@ -50,6 +50,15 @@ void vec2_normalise(vec2_t *v)
     v->y /= len;
 }
 
+vec3_t vec3_clone(const vec3_t *v)
+{
+    return (vec3_t) {
+        .x = v->x,
+        .y = v->y,
+        .z = v->z,
+    };
+}
+
 float vec3_length(const vec3_t v)
 {
     return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);

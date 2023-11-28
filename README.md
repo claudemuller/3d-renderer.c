@@ -47,3 +47,9 @@ make debug
 ```bash
 make clean
 ```
+
+---
+
+> References
+>
+> Code produced as part of the course [3D Graphics Programming from Scratch](https://courses.pikuma.com/courses/take/learn-computer-graphics-programming).

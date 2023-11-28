@@ -238,6 +238,10 @@ void update(void)
 
     size_t num_faces = (size_t)array_length(mesh.faces);
     for (size_t i = 0; i < num_faces; i++) {
+        if (i != 4) {
+            continue;
+        }
+
         face_t mesh_face = mesh.faces[i];
 
         // Triangle face vertices
@@ -301,6 +305,17 @@ void update(void)
                 continue;
             }
         }
+
+        // Create polygon from original triangle to be clipped
+        polygon_t polygon = create_poly_from_triangle(
+            vec3_from_vec4(transformed_vertices[0]),
+            vec3_from_vec4(transformed_vertices[1]),
+            vec3_from_vec4(transformed_vertices[2])
+        );
+
+        clip_polygon(&polygon);
+
+        // Break polygon back into triangles
 
         // Project into screen space
         vec4_t projected_points[NUM_TRIANGLE_VERTICES];

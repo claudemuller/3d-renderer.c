@@ -27,6 +27,7 @@ vec2_t vec2_div(const vec2_t v, const float f);
 float vec2_dot(const vec2_t v1, const vec2_t v2);
 void vec2_normalise(vec2_t *v);
 
+vec3_t vec3_clone(const vec3_t *v);
 float vec3_length(const vec3_t v);
 vec3_t vec3_add(const vec3_t v1, const vec3_t v2);
 vec3_t vec3_sub(const vec3_t v1, const vec3_t v2);
